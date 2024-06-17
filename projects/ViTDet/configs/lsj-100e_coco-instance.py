@@ -1,17 +1,19 @@
 _base_ = [
     '../../../configs/_base_/default_runtime.py',
 ]
+from functools import partial
+from torch.distributed.fsdp.wrap import size_based_auto_wrap_policy
 
 # dataset settings
 dataset_type = 'CocoDataset'
 data_root = 'data/coco/'
-image_size = (1024, 1024)
+image_size = (256, 256)
 
 backend_args = None
 
 train_pipeline = [
     dict(type='LoadImageFromFile', backend_args=backend_args),
-    dict(type='LoadAnnotations', with_bbox=True, with_mask=True),
+    dict(type='LoadAnnotations', with_bbox=True),
     dict(type='RandomFlip', prob=0.5),
     dict(
         type='RandomResize',
@@ -33,7 +35,7 @@ test_pipeline = [
     dict(type='LoadImageFromFile', backend_args=backend_args),
     dict(type='Resize', scale=image_size, keep_ratio=True),
     dict(type='Pad', size=image_size, pad_val=dict(img=(114, 114, 114))),
-    dict(type='LoadAnnotations', with_bbox=True, with_mask=True),
+    dict(type='LoadAnnotations', with_bbox=True),
     dict(
         type='PackDetInputs',
         meta_keys=('img_id', 'img_path', 'ori_shape', 'img_shape',
@@ -41,7 +43,7 @@ test_pipeline = [
 ]
 
 train_dataloader = dict(
-    batch_size=4,
+    batch_size=8,
     num_workers=8,
     persistent_workers=True,
     sampler=dict(type='DefaultSampler', shuffle=True),
@@ -54,7 +56,7 @@ train_dataloader = dict(
         pipeline=train_pipeline))
 
 val_dataloader = dict(
-    batch_size=1,
+    batch_size=8,
     num_workers=2,
     persistent_workers=True,
     drop_last=False,
@@ -77,18 +79,18 @@ test_evaluator = val_evaluator
 
 optim_wrapper = dict(
     type='AmpOptimWrapper',
-    constructor='LayerDecayOptimizerConstructor',
-    paramwise_cfg={
-        'decay_rate': 0.7,
-        'decay_type': 'layer_wise',
-        'num_layers': 12,
-    },
-    optimizer=dict(
-        type='AdamW',
-        lr=0.0001,
-        betas=(0.9, 0.999),
-        weight_decay=0.1,
-    ))
+    optimizer=dict(type='SGD', lr=0.001, momentum=0.9, weight_decay=0.0005),
+    clip_grad=dict(max_norm=35, norm_type=2),
+    accumulative_counts=1)
+# optim_wrapper = dict(
+#     type='DeepSpeedOptimWrapper',
+#     optimizer=dict(
+#         type='AdamW',
+#         lr=0.001,  # 0.0002 for DeformDETR
+#         weight_decay=0.0005))
+    #clip_grad=dict(max_norm=35, norm_type=2))
+    #paramwise_cfg=dict(custom_keys={'backbone': dict(lr_mult=0.1)}))
+
 
 # 100 ep = 184375 iters * 64 images/iter / 118000 images/ep
 max_iters = 184375
@@ -133,3 +135,10 @@ visualizer = dict(
 log_processor = dict(type='LogProcessor', window_size=50, by_epoch=False)
 
 auto_scale_lr = dict(base_batch_size=64)
+
+wrap_policy = partial(size_based_auto_wrap_policy, min_num_params=100_000, recurse=True)
+
+runner_type = 'FlexibleRunner'
+strategy = dict(
+    type='FSDPStrategy',
+    model_wrapper=dict(auto_wrap_policy=dict(type=wrap_policy)))
