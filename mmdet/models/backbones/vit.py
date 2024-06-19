@@ -12,8 +12,6 @@ from mmengine.runner.checkpoint import CheckpointLoader
 
 from mmdet.registry import MODELS
 
-import traceback
-
 
 @MODELS.register_module()
 class LN2d(nn.Module):
@@ -437,9 +435,7 @@ class ViT(BaseModule):
             self.load_state_dict(_state_dict, False)
 
     def forward(self, x, input_res=None):
-        traceback.print_stack()
-        if input_res:
-            print("WE HAVE INPUT RESOLUTION")
+        assert input_res is not None, "Failed to pass input_res, I've made it a required value"
         x = self.patch_embed(x)
         if self.pos_embed is not None:
             x = x + get_abs_pos(self.pos_embed, self.pretrain_use_cls_token,

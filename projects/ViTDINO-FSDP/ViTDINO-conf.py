@@ -5,20 +5,16 @@ _base_ = [
 from torch.nn.modules.activation import ReLU
 from torch.nn import LayerNorm as LN
 
-from mmdet.models import (DETR, ChannelMapper, DetDataPreprocessor, DETRHead, ViT)
-from mmdet.models.losses.cross_entropy_loss import CrossEntropyLoss
+from mmdet.models import (DINO, ChannelMapper, DetDataPreprocessor, DINOHead, ViT)
+from mmdet.models.losses.focal_loss import FocalLoss
 from mmdet.models.losses.smooth_l1_loss import L1Loss
 from mmdet.models.losses.iou_loss import GIoULoss
-from mmdet.models.task_modules import (BBoxL1Cost, ClassificationCost,
+from mmdet.models.task_modules import (BBoxL1Cost, FocalLossCost,
                                        HungarianAssigner, IoUCost)
 from mmengine.model.weight_init import PretrainedInit
 
 image_size = (256, 256)
 backbone_norm_cfg = dict(type=LN, requires_grad=True)
-norm_cfg = dict(type="LN2d", requires_grad=True)
-batch_augments = [
-    dict(type='BatchFixedSizePad', size=image_size, pad_mask=True)
-]
 
 data_preprocessor = dict(
     type=DetDataPreprocessor,
@@ -28,8 +24,10 @@ data_preprocessor = dict(
     pad_size_divisor=32)
 
 model = dict(
-    type=DETR,
+    type=DINO,
     num_queries=100,
+    with_box_refine=True,
+    as_two_stage=True,
     data_preprocessor=data_preprocessor,
     backbone=dict(
         type=ViT,
@@ -64,60 +62,57 @@ model = dict(
         act_cfg=None,
         norm_cfg=None,
         num_outs=1),
-    encoder=dict(  # DetrTransformerEncoder
+    encoder=dict(
         num_layers=6,
-        layer_cfg=dict(  # DetrTransformerEncoderLayer
-            self_attn_cfg=dict(  # MultiheadAttention
-                embed_dims=256,
-                num_heads=8,
-                dropout=0.1,
-                batch_first=True),
+        layer_cfg=dict(
+            self_attn_cfg=dict(embed_dims=256, num_levels=1,
+                               dropout=0.0),  # 0.1 for DeformDETR
             ffn_cfg=dict(
                 embed_dims=256,
-                feedforward_channels=2048,
-                num_fcs=2,
-                ffn_drop=0.1,
-                act_cfg=dict(type=ReLU, inplace=True)))),
-    decoder=dict(  # DetrTransformerDecoder
+                feedforward_channels=2048,  # 1024 for DeformDETR
+                ffn_drop=0.0))),  # 0.1 for DeformDETR
+    decoder=dict(
         num_layers=6,
-        layer_cfg=dict(  # DetrTransformerDecoderLayer
-            self_attn_cfg=dict(  # MultiheadAttention
-                embed_dims=256,
-                num_heads=8,
-                dropout=0.1,
-                batch_first=True),
-            cross_attn_cfg=dict(  # MultiheadAttention
-                embed_dims=256,
-                num_heads=8,
-                dropout=0.1,
-                batch_first=True),
+        return_intermediate=True,
+        layer_cfg=dict(
+            self_attn_cfg=dict(embed_dims=256, num_heads=8,
+                               dropout=0.0),  # 0.1 for DeformDETR
+            cross_attn_cfg=dict(embed_dims=256, num_levels=1,
+                                dropout=0.0),  # 0.1 for DeformDETR
             ffn_cfg=dict(
                 embed_dims=256,
-                feedforward_channels=2048,
-                num_fcs=2,
-                ffn_drop=0.1,
-                act_cfg=dict(type=ReLU, inplace=True))),
-        return_intermediate=True),
-    positional_encoding=dict(num_feats=128, normalize=True),
+                feedforward_channels=2048,  # 1024 for DeformDETR
+                ffn_drop=0.0)),  # 0.1 for DeformDETR
+        post_norm_cfg=None),
+    positional_encoding=dict(
+        num_feats=128,
+        normalize=True,
+        offset=0.0,  # -0.5 for DeformDETR
+        temperature=20),  # 10000 for DeformDETR
     bbox_head=dict(
-        type=DETRHead,
+        type=DINOHead,
         num_classes=80,
-        embed_dims=256,
+        sync_cls_avg_factor=True,
         loss_cls=dict(
-            type=CrossEntropyLoss,
-            bg_cls_weight=0.1,
-            use_sigmoid=False,
-            loss_weight=1.0,
-            class_weight=1.0),
+            type=FocalLoss,
+            use_sigmoid=True,
+            gamma=2.0,
+            alpha=0.25,
+            loss_weight=1.0),  # 2.0 in DeformDETR
         loss_bbox=dict(type=L1Loss, loss_weight=5.0),
         loss_iou=dict(type=GIoULoss, loss_weight=2.0)),
+    dn_cfg=dict(  # TODO: Move to model.train_cfg ?
+        label_noise_scale=0.5,
+        box_noise_scale=1.0,  # 0.4 for DN-DETR
+        group_cfg=dict(dynamic=True, num_groups=None,
+                       num_dn_queries=100)),  # TODO: half num_dn_queries
     # training and testing settings
     train_cfg=dict(
         assigner=dict(
             type=HungarianAssigner,
             match_costs=[
-                dict(type=ClassificationCost, weight=1.),
+                dict(type=FocalLossCost, weight=2.0),
                 dict(type=BBoxL1Cost, weight=5.0, box_format='xywh'),
                 dict(type=IoUCost, iou_mode='giou', weight=2.0)
             ])),
-    test_cfg=dict(max_per_img=100))
+    test_cfg=dict(max_per_img=300))  # 100 for DeformDETR
