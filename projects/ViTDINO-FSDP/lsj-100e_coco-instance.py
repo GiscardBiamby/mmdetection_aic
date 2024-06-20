@@ -16,6 +16,7 @@ backend_args = None
 train_pipeline = [
     dict(type='LoadImageFromFile', backend_args=backend_args),
     dict(type='LoadAnnotations', with_bbox=True),
+    dict(type="RandomGrayscale", prob=0.2, keep_channels=True),
     dict(type='RandomFlip', prob=0.5),
     dict(
         type='RandomResize',

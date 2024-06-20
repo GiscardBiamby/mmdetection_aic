@@ -4,7 +4,6 @@ _base_ = [
 
 from functools import partial
 
-from torch.nn.modules.activation import ReLU
 from torch.nn import LayerNorm as LN
 
 from mmdet.models import (DINO, ChannelMapper, DetDataPreprocessor, DINOHead, ViTMAE)

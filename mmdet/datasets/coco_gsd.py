@@ -14,7 +14,12 @@ class CocoDatasetGSD(CocoDataset):
         #   "data_samples": ... 
         # }
         data = super(CocoDatasetGSD, self).__getitem__(idx)
-        data["input_res"] = torch.tensor(0.3)
+        metainfo = data["data_samples"].metainfo
+        if "scale" in metainfo:
+            scale = torch.tensor(metainfo["scale"]).mean()
+        else:
+            scale = 1
+        data["input_res"] = torch.tensor(0.3) * scale
         # if isinstance(inputs, dict):
         #     print(inputs.keys())
         # elif isinstance(inputs, list | dict):
