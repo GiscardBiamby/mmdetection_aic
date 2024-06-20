@@ -2,10 +2,12 @@ _base_ = [
     './lsj-100e_coco-instance.py',
 ]
 
+from functools import partial
+
 from torch.nn.modules.activation import ReLU
 from torch.nn import LayerNorm as LN
 
-from mmdet.models import (DINO, ChannelMapper, DetDataPreprocessor, DINOHead, ViT)
+from mmdet.models import (DINO, ChannelMapper, DetDataPreprocessor, DINOHead, ViTMAE)
 from mmdet.models.losses.focal_loss import FocalLoss
 from mmdet.models.losses.smooth_l1_loss import L1Loss
 from mmdet.models.losses.iou_loss import GIoULoss
@@ -13,7 +15,7 @@ from mmdet.models.task_modules import (BBoxL1Cost, FocalLossCost,
                                        HungarianAssigner, IoUCost)
 from mmengine.model.weight_init import PretrainedInit
 
-image_size = (256, 256)
+image_size = (224, 224)
 backbone_norm_cfg = dict(type=LN, requires_grad=True)
 
 data_preprocessor = dict(
@@ -30,30 +32,16 @@ model = dict(
     as_two_stage=True,
     data_preprocessor=data_preprocessor,
     backbone=dict(
-        type=ViT,
-        img_size=256,
+        type=ViTMAE,
         patch_size=16,
         embed_dim=1024,
         depth=24,
         num_heads=16,
-        drop_path_rate=0.1,
-        window_size=14,
         mlp_ratio=4,
-        qkv_bias=True,
-        norm_cfg=backbone_norm_cfg,
-        window_block_indexes=[
-            0,
-            1,
-            3,
-            4,
-            6,
-            7,
-            9,
-            10,
-        ],
-        use_rel_pos=True,
+        norm_layer=partial(LN, eps=1e-6),
+        img_size=224,
         init_cfg=dict(
-            type=PretrainedInit, checkpoint='/home/mlavery/scalemae_docker/weights/vitlarge-wrapped.pt')),
+            type=PretrainedInit, checkpoint='/home/mlavery/scalemae_docker/weights/scalemae-vitlarge-800.pth')),
     neck=dict(
         type=ChannelMapper,
         in_channels=[1024],

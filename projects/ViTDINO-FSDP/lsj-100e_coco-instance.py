@@ -9,7 +9,7 @@ from mmdet.datasets import CocoDatasetGSD
 
 # dataset settings
 data_root = 'data/coco/'
-image_size = (256, 256)
+image_size = (224, 224)
 
 backend_args = None
 
