@@ -15,7 +15,7 @@ from mmdet.models.task_modules import (BBoxL1Cost, FocalLossCost,
 from mmengine.model.weight_init import PretrainedInit
 
 image_size = (224, 224)
-backbone_norm_cfg = dict(type=LN, requires_grad=True)
+NUM_CLASSES = 60
 
 data_preprocessor = dict(
     type=DetDataPreprocessor,
@@ -39,8 +39,7 @@ model = dict(
         mlp_ratio=4,
         norm_layer=partial(LN, eps=1e-6),
         img_size=224,
-        init_cfg=dict(
-            type=PretrainedInit, checkpoint='/home/mlavery/scalemae_docker/weights/scalemae-vitlarge-800.pth')),
+        init_cfg=dict(type=PretrainedInit, checkpoint='/home/mlavery/scalemae_docker/weights/scalemae-vitlarge-unwrapped.pth')),
     neck=dict(
         type=ChannelMapper,
         in_channels=[1024],
@@ -78,7 +77,7 @@ model = dict(
         temperature=20),  # 10000 for DeformDETR
     bbox_head=dict(
         type=DINOHead,
-        num_classes=80,
+        num_classes=NUM_CLASSES,
         sync_cls_avg_factor=True,
         loss_cls=dict(
             type=FocalLoss,

@@ -7,6 +7,14 @@ class CocoDatasetGSD(CocoDataset):
     def __init__(self, *args, **kwargs):
         super(CocoDatasetGSD, self).__init__(*args, **kwargs)
         
+    def parse_data_info(self, raw_data_info: dict) -> dict | torch.List[dict]:
+        data_info = super().parse_data_info(raw_data_info)
+        img_info = raw_data_info['raw_img_info']
+        
+        assert "image_res" in img_info
+        data_info["image_res"] = img_info["image_res"]
+        return data_info
+        
     def __getitem__(self, idx: int) -> dict:
         # coco dataset returns a dict
         # {
@@ -19,7 +27,7 @@ class CocoDatasetGSD(CocoDataset):
             scale = torch.tensor(metainfo["scale"]).mean()
         else:
             scale = 1
-        data["input_res"] = torch.tensor(0.3) * scale
+        data["input_res"] = torch.tensor(metainfo["image_res"]) / scale
         # if isinstance(inputs, dict):
         #     print(inputs.keys())
         # elif isinstance(inputs, list | dict):

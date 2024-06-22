@@ -83,7 +83,7 @@ class DetectionTransformer(BaseDetector, metaclass=ABCMeta):
 
     def loss(self, batch_inputs: Tensor,
              batch_data_samples: SampleList,
-             input_res: float = None) -> Union[dict, list]:
+             input_res: Tensor = None) -> Union[dict, list]:
         """Calculate losses from a batch of inputs and data samples.
 
         Args:
@@ -107,7 +107,8 @@ class DetectionTransformer(BaseDetector, metaclass=ABCMeta):
     def predict(self,
                 batch_inputs: Tensor,
                 batch_data_samples: SampleList,
-                rescale: bool = True) -> SampleList:
+                rescale: bool = True,
+                input_res: Tensor = None) -> SampleList:
         """Predict results from a batch of inputs and data samples with post-
         processing.
 
@@ -131,7 +132,7 @@ class DetectionTransformer(BaseDetector, metaclass=ABCMeta):
             - bboxes (Tensor): Has a shape (num_instances, 4),
               the last dimension 4 arrange as (x1, y1, x2, y2).
         """
-        img_feats = self.extract_feat(batch_inputs)
+        img_feats = self.extract_feat(batch_inputs, input_res=input_res)
         head_inputs_dict = self.forward_transformer(img_feats,
                                                     batch_data_samples)
         results_list = self.bbox_head.predict(

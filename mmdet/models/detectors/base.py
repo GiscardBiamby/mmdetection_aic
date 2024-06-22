@@ -91,11 +91,11 @@ class BaseDetector(BaseModel, metaclass=ABCMeta):
         """
         assert input_res is not None, 'input_res should be provided'
         if mode == 'loss':
-            return self.loss(inputs, data_samples, input_res)
+            return self.loss(inputs, data_samples, input_res=input_res)
         elif mode == 'predict':
-            return self.predict(inputs, data_samples, input_res)
+            return self.predict(inputs, data_samples, input_res=input_res)
         elif mode == 'tensor':
-            return self._forward(inputs, data_samples, input_res)
+            return self._forward(inputs, data_samples, input_res=input_res)
         else:
             raise RuntimeError(f'Invalid mode "{mode}". '
                                'Only supports loss, predict and tensor mode')
