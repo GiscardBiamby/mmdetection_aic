@@ -97,7 +97,7 @@ class TwoStageDetector(BaseDetector):
         """bool: whether the detector has a RoI head"""
         return hasattr(self, 'roi_head') and self.roi_head is not None
 
-    def extract_feat(self, batch_inputs: Tensor) -> Tuple[Tensor]:
+    def extract_feat(self, batch_inputs: Tensor, input_res) -> Tuple[Tensor]:
         """Extract features.
 
         Args:
@@ -107,7 +107,7 @@ class TwoStageDetector(BaseDetector):
             tuple[Tensor]: Multi-level features that may have
             different resolutions.
         """
-        x = self.backbone(batch_inputs)
+        x = self.backbone(batch_inputs, input_res=input_res)
         if self.with_neck:
             x = self.neck(x)
         return x
@@ -144,7 +144,8 @@ class TwoStageDetector(BaseDetector):
         return results
 
     def loss(self, batch_inputs: Tensor,
-             batch_data_samples: SampleList) -> dict:
+             batch_data_samples: SampleList,
+             input_res) -> dict:
         """Calculate losses from a batch of inputs and data samples.
 
         Args:
@@ -157,7 +158,7 @@ class TwoStageDetector(BaseDetector):
         Returns:
             dict: A dictionary of loss components
         """
-        x = self.extract_feat(batch_inputs)
+        x = self.extract_feat(batch_inputs, input_res=input_res)
 
         losses = dict()
 
@@ -196,6 +197,7 @@ class TwoStageDetector(BaseDetector):
     def predict(self,
                 batch_inputs: Tensor,
                 batch_data_samples: SampleList,
+                input_res: float,
                 rescale: bool = True) -> SampleList:
         """Predict results from a batch of inputs and data samples with post-
         processing.
@@ -224,7 +226,7 @@ class TwoStageDetector(BaseDetector):
         """
 
         assert self.with_bbox, 'Bbox head must be implemented.'
-        x = self.extract_feat(batch_inputs)
+        x = self.extract_feat(batch_inputs, input_res=input_res)
 
         # If there are no pre-defined proposals, use RPN to get proposals
         if batch_data_samples[0].get('proposals', None) is None:

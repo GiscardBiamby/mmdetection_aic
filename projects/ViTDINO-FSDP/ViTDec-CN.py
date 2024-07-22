@@ -6,8 +6,6 @@ from functools import partial
 
 from torch.nn import LayerNorm as LN
 
-from timm.data.constants import IMAGENET_DEFAULT_MEAN, IMAGENET_DEFAULT_STD
-
 from mmdet.models import (DINO, ChannelMapper, DetDataPreprocessor, DINOHead, ViTMAE)
 from mmdet.models.losses.focal_loss import FocalLoss
 from mmdet.models.losses.smooth_l1_loss import L1Loss
@@ -16,13 +14,13 @@ from mmdet.models.task_modules import (BBoxL1Cost, FocalLossCost,
                                        HungarianAssigner, IoUCost)
 from mmengine.model.weight_init import PretrainedInit
 
-image_size = (400, 400)
+image_size = (224, 224)
 NUM_CLASSES = 60
 
 data_preprocessor = dict(
     type=DetDataPreprocessor,
-    mean=IMAGENET_DEFAULT_MEAN,
-    std=IMAGENET_DEFAULT_STD,
+    mean=[0, 0, 0],
+    std=[255., 255., 255.],
     bgr_to_rgb=True,
     pad_size_divisor=32)
 
@@ -38,6 +36,9 @@ model = dict(
         embed_dim=1024,
         depth=24,
         num_heads=16,
+        decoder_embed_dim=512,
+        # decoder_depth=8,
+        decoder_num_heads=16,
         mlp_ratio=4,
         norm_layer=partial(LN, eps=1e-6),
         img_size=224,

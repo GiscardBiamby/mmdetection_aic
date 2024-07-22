@@ -432,6 +432,8 @@ class ViT(BaseModule):
                 self.init_cfg.checkpoint, logger=logger, map_location='cpu')
             if 'model' in ckpt:
                 _state_dict = ckpt['model']
+            else:
+                _state_dict = ckpt
             self.load_state_dict(_state_dict, False)
 
     def forward(self, x, input_res=None):
@@ -446,4 +448,4 @@ class ViT(BaseModule):
 
         x = x.permute(0, 3, 1, 2)
 
-        return [x]
+        return x

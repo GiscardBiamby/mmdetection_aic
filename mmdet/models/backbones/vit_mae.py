@@ -279,6 +279,7 @@ class ViTMAE(BaseModule):
         input_res,
         mask_ratio=0.0,
     ):
+        assert all(input_res > 0), "input_res must be positive, probably negative if you forgot to assign it in the dataset"
         # images, targets: B X C X H0 X W0;  B X C X H1 X W1
         # input_res, target_res: []
         B, C, H, W = imgs.shape
@@ -289,6 +290,7 @@ class ViTMAE(BaseModule):
         patches_H = H // self.patch_embed.patch_size[0]
         patches_W = W // self.patch_embed.patch_size[1]
         latent = latent[:, 1:, :].transpose(1, 2).reshape(B, self.embed_dim, patches_H, patches_W)
+        return latent
         return [latent]
         
 MODELS.register_module(module=ViTMAE)

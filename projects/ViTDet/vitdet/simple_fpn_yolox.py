@@ -12,7 +12,7 @@ from mmdet.utils import MultiConfig, OptConfigType
 
 
 @MODELS.register_module()
-class SimpleFPN(BaseModule):
+class SimpleFPNYolo(BaseModule):
     """Simple Feature Pyramid Network for ViTDet."""
 
     def __init__(self,
@@ -43,7 +43,7 @@ class SimpleFPN(BaseModule):
             nn.ConvTranspose2d(self.backbone_channel,
                                self.backbone_channel // 2, 2, 2))
         self.fpn3 = nn.Sequential(nn.Identity())
-        self.fpn4 = nn.Sequential(nn.MaxPool2d(kernel_size=2, stride=2))
+        #self.fpn4 = nn.Sequential(nn.MaxPool2d(kernel_size=2, stride=2))
 
         self.lateral_convs = nn.ModuleList()
         self.fpn_convs = nn.ModuleList()
@@ -83,7 +83,7 @@ class SimpleFPN(BaseModule):
         inputs.append(self.fpn1(input))
         inputs.append(self.fpn2(input))
         inputs.append(self.fpn3(input))
-        inputs.append(self.fpn4(input))
+        #inputs.append(self.fpn4(input))
 
         # build laterals
         laterals = [

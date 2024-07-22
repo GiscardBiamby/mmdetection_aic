@@ -61,7 +61,8 @@ class SingleStageDetector(BaseDetector):
                                       error_msgs)
 
     def loss(self, batch_inputs: Tensor,
-             batch_data_samples: SampleList) -> Union[dict, list]:
+             batch_data_samples: SampleList,
+             input_res=None) -> Union[dict, list]:
         """Calculate losses from a batch of inputs and data samples.
 
         Args:
@@ -74,14 +75,15 @@ class SingleStageDetector(BaseDetector):
         Returns:
             dict: A dictionary of loss components.
         """
-        x = self.extract_feat(batch_inputs)
+        x = self.extract_feat(batch_inputs, input_res=input_res)
         losses = self.bbox_head.loss(x, batch_data_samples)
         return losses
 
     def predict(self,
                 batch_inputs: Tensor,
                 batch_data_samples: SampleList,
-                rescale: bool = True) -> SampleList:
+                rescale: bool = True,
+                input_res: Tensor = None) -> SampleList:
         """Predict results from a batch of inputs and data samples with post-
         processing.
 
@@ -106,7 +108,7 @@ class SingleStageDetector(BaseDetector):
                 - bboxes (Tensor): Has a shape (num_instances, 4),
                     the last dimension 4 arrange as (x1, y1, x2, y2).
         """
-        x = self.extract_feat(batch_inputs)
+        x = self.extract_feat(batch_inputs, input_res=input_res)
         results_list = self.bbox_head.predict(
             x, batch_data_samples, rescale=rescale)
         batch_data_samples = self.add_pred_to_datasample(
@@ -116,7 +118,8 @@ class SingleStageDetector(BaseDetector):
     def _forward(
             self,
             batch_inputs: Tensor,
-            batch_data_samples: OptSampleList = None) -> Tuple[List[Tensor]]:
+            batch_data_samples: OptSampleList = None,
+            input_res: Tensor = None) -> Tuple[List[Tensor]]:
         """Network forward process. Usually includes backbone, neck and head
         forward without any post-processing.
 
@@ -129,11 +132,11 @@ class SingleStageDetector(BaseDetector):
         Returns:
             tuple[list]: A tuple of features from ``bbox_head`` forward.
         """
-        x = self.extract_feat(batch_inputs)
+        x = self.extract_feat(batch_inputs, input_res=input_res)
         results = self.bbox_head.forward(x)
         return results
 
-    def extract_feat(self, batch_inputs: Tensor) -> Tuple[Tensor]:
+    def extract_feat(self, batch_inputs: Tensor, input_res: Tensor = None) -> Tuple[Tensor]:
         """Extract features.
 
         Args:
@@ -143,7 +146,7 @@ class SingleStageDetector(BaseDetector):
             tuple[Tensor]: Multi-level features that may have
             different resolutions.
         """
-        x = self.backbone(batch_inputs)
+        x = self.backbone(batch_inputs, input_res=input_res)
         if self.with_neck:
             x = self.neck(x)
         return x

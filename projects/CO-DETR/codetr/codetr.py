@@ -123,7 +123,7 @@ class CoDETR(BaseDetector):
                 or (hasattr(self, 'bbox_head') and self.bbox_head is not None
                     and len(self.bbox_head) > 0))
 
-    def extract_feat(self, batch_inputs: Tensor) -> Tuple[Tensor]:
+    def extract_feat(self, batch_inputs: Tensor, input_res=None) -> Tuple[Tensor]:
         """Extract features.
 
         Args:
@@ -133,7 +133,7 @@ class CoDETR(BaseDetector):
             tuple[Tensor]: Tuple of feature maps from neck. Each feature map
             has shape (bs, dim, H, W).
         """
-        x = self.backbone(batch_inputs)
+        x = self.backbone(batch_inputs, input_res)
         if self.with_neck:
             x = self.neck(x)
         return x
@@ -141,10 +141,12 @@ class CoDETR(BaseDetector):
     def _forward(self,
                  batch_inputs: Tensor,
                  batch_data_samples: OptSampleList = None):
+        raise NotImplementedError()
         pass
 
     def loss(self, batch_inputs: Tensor,
-             batch_data_samples: SampleList) -> Union[dict, list]:
+             batch_data_samples: SampleList,
+             input_res=None) -> Union[dict, list]:
         batch_input_shape = batch_data_samples[0].batch_input_shape
         if self.use_lsj:
             for data_samples in batch_data_samples:
@@ -152,7 +154,7 @@ class CoDETR(BaseDetector):
                 input_img_h, input_img_w = batch_input_shape
                 img_metas['img_shape'] = [input_img_h, input_img_w]
 
-        x = self.extract_feat(batch_inputs)
+        x = self.extract_feat(batch_inputs, input_res=input_res)
 
         losses = dict()
 
@@ -235,7 +237,8 @@ class CoDETR(BaseDetector):
     def predict(self,
                 batch_inputs: Tensor,
                 batch_data_samples: SampleList,
-                rescale: bool = True) -> SampleList:
+                rescale: bool = True,
+                input_res=None) -> SampleList:
         """Predict results from a batch of inputs and data samples with post-
         processing.
 
@@ -267,7 +270,7 @@ class CoDETR(BaseDetector):
                 input_img_h, input_img_w = img_metas['batch_input_shape']
                 img_metas['img_shape'] = [input_img_h, input_img_w]
 
-        img_feats = self.extract_feat(batch_inputs)
+        img_feats = self.extract_feat(batch_inputs, input_res=input_res)
         if self.with_bbox and self.eval_module == 'one-stage':
             results_list = self.predict_bbox_head(
                 img_feats, batch_data_samples, rescale=rescale)
