@@ -7,7 +7,7 @@ class CocoDatasetGSD(CocoDataset):
     def __init__(self, *args, **kwargs):
         super(CocoDatasetGSD, self).__init__(*args, **kwargs)
         
-    def parse_data_info(self, raw_data_info: dict) -> dict | torch.List[dict]:
+    def parse_data_info(self, raw_data_info: dict) -> dict:
         data_info = super().parse_data_info(raw_data_info)
         img_info = raw_data_info['raw_img_info']
         
