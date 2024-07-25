@@ -23,8 +23,8 @@ class CocoDatasetGSD(CocoDataset):
         # }
         data = super(CocoDatasetGSD, self).__getitem__(idx)
         metainfo = data["data_samples"].metainfo
-        if "scale" in metainfo:
-            scale = torch.tensor(metainfo["scale"]).mean()
+        if "scale_factor" in metainfo:
+            scale = torch.tensor(metainfo["scale_factor"]).mean()
         else:
             scale = 1
         data["input_res"] = torch.tensor(metainfo["input_res"]) / scale

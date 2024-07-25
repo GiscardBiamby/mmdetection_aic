@@ -6,6 +6,8 @@ from mmengine.runner.loops import IterBasedTrainLoop
 from mmdet.datasets import CocoDatasetGSD
 from mmdet.datasets.transforms import Rotate
 
+from mmcv.transforms import RandomGrayscale, BaseTransform
+
 # dataset settings
 data_root = "/home/mlavery/xview_400_0/"
 image_size = (512, 512)
@@ -75,26 +77,29 @@ CLASSES = (
 
 backend_args = None
 
+class AddScale(BaseTransform):
+    def transform(self, results):
+        results["scale"] = 1
+        return results
+
 train_pipeline = [
     dict(type='LoadImageFromFile', backend_args=backend_args),
-    dict(type='LoadAnnotations', with_bbox=True, with_mask=True),
-    dict(type="RandomGrayscale", prob=0.2, keep_channels=True),
-    dict(type='RandomFlip', prob=0.75, direction=['horizontal', 'vertical', 'diagonal']),
+    dict(type='LoadAnnotations', with_bbox=True, ),
+    # dict(type="RandomGrayscale", prob=0.2, keep_channels=True),
+    # dict(type='RandomFlip', prob=1., direction=['horizontal']),
+    # dict(type='RandomFlip', prob=1, direction=['vertical']),
     dict(
         type='RandomResize',
         scale=image_size,
-        ratio_range=(0.5, 1.2),
+        ratio_range=(1, 1.2),
         keep_ratio=True),
-    dict(
-        type='RandomCrop',
-        crop_type='absolute_range',
-        crop_size=image_size,
-        recompute_bbox=True,
-        allow_negative_crop=True),
-    # dict(type=Rotate),
-    dict(type='Resize', scale=image_size, keep_ratio=True),
-    dict(type='Pad', size=image_size, pad_val=dict(img=(114, 114, 114))),
-    # dict(type='FilterAnnotations', min_gt_bbox_wh=(1e-2, 1e-2)),
+    # dict(
+    #     type='RandomCrop',
+    #     crop_type='absolute_range',
+    #     crop_size=image_size,
+    #     recompute_bbox=True,
+    #     allow_negative_crop=True),
+    dict(type='FilterAnnotations', min_gt_bbox_wh=(1e-2, 1e-2)),
     # dict(type='Pad', size=image_size, pad_val=dict(img=(114, 114, 114))),
     dict(type='PackDetInputs', meta_keys=('img_id', 'img_path', 'ori_shape', 'img_shape', 'scale_factor', 'flip', 'flip_direction', "input_res"))
 ]
@@ -107,11 +112,11 @@ test_pipeline = [
     dict(
         type='PackDetInputs',
         meta_keys=('img_id', 'img_path', 'ori_shape', 'img_shape',
-                   'scale_factor', "input_res"))
+                   'scale_factor', "input_res", 'instances'))
 ]
 
 train_dataloader = dict(
-    batch_size=2,
+    batch_size=16,
     num_workers=8,
     persistent_workers=True,
     sampler=dict(type='DefaultSampler', shuffle=True),
@@ -122,6 +127,7 @@ train_dataloader = dict(
         ann_file='train_gsd.json',
         data_prefix=dict(img='train_images_400_0/'),
         pipeline=train_pipeline,
+        indices=100
     ))
 
 val_dataloader = dict(
@@ -139,11 +145,12 @@ val_dataloader = dict(
         test_mode=True,
         pipeline=test_pipeline,
         ))
+
 test_dataloader = val_dataloader
 
 val_evaluator = dict(
     type='CocoMetric',
-    ann_file='/home/mlavery/xview_400_0/val_gsd_4k_80.json',
+    # ann_file='/home/mlavery/xview_400_0/val_gsd_4k_80.json',
     metric=['bbox'],
     format_only=False,
     classwise=True,
@@ -151,7 +158,7 @@ val_evaluator = dict(
 test_evaluator = val_evaluator
 
 # 100 ep = 184375 iters * 64 images/iter / 118000 images/ep
-max_iters = 184375 * 4
+max_iters = 184375
 interval = 5000
 dynamic_intervals = [(max_iters // interval * interval + 1, max_iters)]
 param_scheduler = [
@@ -164,7 +171,7 @@ param_scheduler = [
         by_epoch=False,
         # 88 ep = [163889 iters * 64 images/iter / 118000 images/ep
         # 96 ep = [177546 iters * 64 images/iter / 118000 images/ep
-        milestones=[163889 * 4, 177546 * 4],
+        milestones=[163889, 177546],
         gamma=0.1)
 ]
 
