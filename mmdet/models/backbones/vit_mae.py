@@ -1,6 +1,3 @@
-from mae.models_vit import VisionTransformer
-from torch import Tensor
-
 from mmengine.model import BaseModule
 
 from mmdet.registry import MODELS
@@ -21,11 +18,79 @@ from functools import partial
 import torch
 import torch.nn as nn
 from timm.models.vision_transformer import Block, PatchEmbed
-from mae.util.pos_embed import (
-    get_2d_sincos_pos_embed,
-    get_2d_sincos_pos_embed_with_resolution,
-)
+import numpy as np
 
+def get_2d_sincos_pos_embed_with_resolution(
+    embed_dim, grid_size, res, cls_token=False, device="cpu"
+):
+    """
+    grid_size: int of the grid height and width
+    res: array of size n, representing the resolution of a pixel (say, in meters),
+    return:
+    pos_embed: [n,grid_size*grid_size, embed_dim] or [n,1+grid_size*grid_size, embed_dim] (w/ or w/o cls_token)
+    """
+    # res = torch.FloatTensor(res).to(device)
+    res = res.to(device)
+    grid_h = torch.arange(grid_size, dtype=torch.float32, device=device)
+    grid_w = torch.arange(grid_size, dtype=torch.float32, device=device)
+    grid = torch.meshgrid(
+        grid_w, grid_h, indexing="xy"
+    )  # here h goes first,direction reversed for numpy
+    grid = torch.stack(grid, dim=0)  # 2 x h x w
+
+    # grid = grid.reshape([2, 1, grid_size, grid_size])
+    grid = torch.einsum("chw,n->cnhw", grid, res)  # 2 x n x h x w
+    _, n, h, w = grid.shape
+    pos_embed = get_2d_sincos_pos_embed_from_grid_torch(
+        embed_dim, grid
+    )  #  # (nxH*W, D/2)
+    pos_embed = pos_embed.reshape(n, h * w, embed_dim)
+    if cls_token:
+        pos_embed = torch.cat(
+            [
+                torch.zeros(
+                    [n, 1, embed_dim], dtype=torch.float32, device=pos_embed.device
+                ),
+                pos_embed,
+            ],
+            dim=1,
+        )
+    return pos_embed
+
+def get_2d_sincos_pos_embed_from_grid_torch(embed_dim, grid):
+    assert embed_dim % 2 == 0
+
+    # use half of dimensions to encode grid_h
+    emb_h = get_1d_sincos_pos_embed_from_grid_torch(
+        embed_dim // 2, grid[0]
+    )  # (H*W, D/2)
+    emb_w = get_1d_sincos_pos_embed_from_grid_torch(
+        embed_dim // 2, grid[1]
+    )  # (H*W, D/2)
+
+    emb = torch.cat([emb_h, emb_w], dim=1)  # (H*W, D)
+    return emb
+
+def get_1d_sincos_pos_embed_from_grid_torch(embed_dim, pos):
+    """
+    embed_dim: output dimension for each position
+    pos: a list of positions to be encoded: size (M,)
+    out: (M, D)
+    """
+    assert embed_dim % 2 == 0
+    old_shape = pos
+    omega = torch.arange(embed_dim // 2, dtype=torch.float32, device=pos.device)
+    omega /= embed_dim / 2.0
+    omega = 1.0 / 10000**omega  # (D/2,)
+
+    pos = pos.reshape(-1)  # (M,)
+    out = torch.einsum("m,d->md", pos, omega)  # (M, D/2), outer product
+
+    emb_sin = torch.sin(out)  # (M, D/2)
+    emb_cos = torch.cos(out)  # (M, D/2)
+
+    emb = torch.cat([emb_sin, emb_cos], dim=1)  # (M, D)
+    return emb
 
 class PatchEmbedUnSafe(PatchEmbed):
     """Image to Patch Embedding"""
@@ -93,15 +158,6 @@ class ViTMAE(BaseModule):
         self.initialize_weights()
 
     def initialize_weights(self):
-        # initialization
-        # initialize (and freeze) pos_embed by sin-cos embedding
-        pos_embed = get_2d_sincos_pos_embed(
-            self.pos_embed.shape[-1],
-            int(self.patch_embed.num_patches**0.5),
-            cls_token=True,
-        )
-        self.pos_embed.data.copy_(torch.from_numpy(pos_embed).float().unsqueeze(0))
-
         # initialize patch_embed like nn.Linear (instead of nn.Conv2d)
         w = self.patch_embed.proj.weight.data
         torch.nn.init.xavier_uniform_(w.view([w.shape[0], -1]))
@@ -232,7 +288,7 @@ class ViTMAE(BaseModule):
         input_res = input_res.cpu()
 
         num_patches = int(
-            (h * w) / (self.patch_embed.patch_size[0] * self.patch_embed.patch_size[1])
+            (h * w) / (self.patch_size * self.patch_size)
         )
         pos_embed = get_2d_sincos_pos_embed_with_resolution(
             x.shape[-1],
