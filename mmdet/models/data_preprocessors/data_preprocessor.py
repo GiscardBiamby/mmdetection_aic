@@ -119,7 +119,6 @@ class DetDataPreprocessor(ImgDataPreprocessor):
             dict: Data in the same format as the model input.
         """
         batch_pad_shape = self._get_pad_shape(data)
-        assert 'input_res' in data
         data = super().forward(data=data, training=training)
         inputs, data_samples = data['inputs'], data['data_samples']
 
@@ -147,8 +146,7 @@ class DetDataPreprocessor(ImgDataPreprocessor):
             for batch_aug in self.batch_augments:
                 inputs, data_samples = batch_aug(inputs, data_samples)
 
-        input_res = torch.stack(data["input_res"])
-        return {'inputs': inputs, 'data_samples': data_samples, "input_res": input_res}
+        return {'inputs': inputs, 'data_samples': data_samples, "input_res": torch.tensor([-1] * len(inputs))}
 
     def _get_pad_shape(self, data: dict) -> List[tuple]:
         """Get the pad_shape of each image based on data and

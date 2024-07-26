@@ -1,7 +1,7 @@
 _base_ = [
     '../../../configs/_base_/models/mask-rcnn_r50_fpn.py',
     # '/home/mlavery/scalemae_docker/mmdetection/projects/ViTDINO-FSDP/visualize_training.py',
-    '/home/mlavery/scalemae_docker/mmdetection/projects/ViTDINO-FSDP/xview_dataset.py',
+    '../../ViTDINO-FSDP/xview_dataset.py',
 ]
 
 from mmdet.models import ViTMAE
