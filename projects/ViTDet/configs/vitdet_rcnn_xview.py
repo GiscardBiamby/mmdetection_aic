@@ -1,6 +1,6 @@
 _base_ = [
     '../../../configs/_base_/models/mask-rcnn_r50_fpn.py',
-    '/home/mlavery/scalemae_docker/mmdetection/projects/ViTDINO-FSDP/xview_dataset.py',
+    '../../ViTDINO-FSDP/xview_dataset_bs8.py',
 ]
 
 from mmdet.models import ViTMAE
@@ -62,7 +62,7 @@ optim_wrapper = dict(
     paramwise_cfg={
         'decay_rate': 0.7,
         'decay_type': 'layer_wise',
-        'num_layers': 12,
+        'num_layers': 24,
     },
     optimizer=dict(
         type='AdamW',

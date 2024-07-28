@@ -8,7 +8,7 @@ from mmdet.datasets.transforms import Rotate
 
 # dataset settings
 data_root = "data/400_0"
-image_size = (512, 512)
+image_size = (800, 800)
 
 CLASSES = (
     "Fixed-wing Aircraft",
@@ -83,7 +83,7 @@ train_pipeline = [
     dict(
         type='RandomResize',
         scale=image_size,
-        ratio_range=(0.8, 1.2),
+        ratio_range=(0.8, 1.1),
         keep_ratio=True),
     # dict(type=Rotate),
     dict(type='Pad', size=image_size, pad_val=dict(img=(114, 114, 114))),
@@ -104,7 +104,7 @@ test_pipeline = [
 ]
 
 train_dataloader = dict(
-    batch_size=2,
+    batch_size=1,
     num_workers=8,
     persistent_workers=True,
     sampler=dict(type='DefaultSampler', shuffle=True),
@@ -143,8 +143,8 @@ val_evaluator = dict(
     )
 test_evaluator = val_evaluator
 
-# 100 ep = 184375 iters * 64 images/iter / 118000 images/ep
-max_iters = 184375
+# 280_000 iters = 2800 iters/ep * 100 ep
+max_iters = 280000
 interval = 5000
 dynamic_intervals = [(max_iters // interval * interval + 1, max_iters)]
 param_scheduler = [
@@ -155,9 +155,8 @@ param_scheduler = [
         begin=0,
         end=max_iters,
         by_epoch=False,
-        # 88 ep = [163889 iters * 64 images/iter / 118000 images/ep
-        # 96 ep = [177546 iters * 64 images/iter / 118000 images/ep
-        milestones=[163889, 177546],
+        # milestones 88 ep and 94 ep
+        milestones=[246_400, 280_000],
         gamma=0.1)
 ]
 

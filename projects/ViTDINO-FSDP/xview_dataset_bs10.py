@@ -143,8 +143,8 @@ val_evaluator = dict(
     )
 test_evaluator = val_evaluator
 
-# 100 ep = 184375 iters * 64 images/iter / 118000 images/ep
-max_iters = 184375
+# 100ep
+max_iters = 224000
 interval = 5000
 dynamic_intervals = [(max_iters // interval * interval + 1, max_iters)]
 param_scheduler = [
@@ -155,9 +155,7 @@ param_scheduler = [
         begin=0,
         end=max_iters,
         by_epoch=False,
-        # 88 ep = [163889 iters * 64 images/iter / 118000 images/ep
-        # 96 ep = [177546 iters * 64 images/iter / 118000 images/ep
-        milestones=[163889, 177546],
+        milestones=[197120, 210560],
         gamma=0.1)
 ]
 

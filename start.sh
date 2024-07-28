@@ -16,11 +16,15 @@ echo "starting training"
 #      8
 # CUDA_VISIBLE_DEVICES=1,2,3,4,5,6,7,8 ../mmdetection/tools/dist_train.sh ../mmdetection/projects/CO-DETR/configs/codino/scale_co_dino.py \
 #      8
-# ../mmdetection/tools/dist_train.sh /home/mlavery/scalemae_docker/mmdetection/projects/ViTDet/configs/vitdet_yolox.py \
+# ../mmdetection/tools/dist_train.sh ../mmdetection/projects/ViTDet/configs/vitdet_yolox.py \
 #      5
-# CUDA_VISIBLE_DEVICES=1,2,3,4,5,6,7,8 ../mmdetection/tools/dist_train.sh /home/mlavery/scalemae_docker/mmdetection/projects/ViTDet/configs/vitdet_mask-rcnn_vit-b-mae_lsj-100e.py \
+# CUDA_VISIBLE_DEVICES=1,2,3,4,5,6,7,8 ../mmdetection/tools/dist_train.sh ../mmdetection/projects/ViTDet/configs/vitdet_mask-rcnn_vit-b-mae_lsj-100e.py \
 #      8
-# CUDA_VISIBLE_DEVICES=1,2,3,4,5,6,7,8 ../mmdetection/tools/dist_train.sh /home/mlavery/scalemae_docker/mmdetection/projects/ViTDet/configs/vitdet_rcnn_coco.py \
+# CUDA_VISIBLE_DEVICES=1,2,3,4,5,6,7,8 ../mmdetection/tools/dist_train.sh ../mmdetection/projects/ViTDet/configs/vitdet_rcnn_coco.py \
 #      8
-CUDA_VISIBLE_DEVICES=1,2,3,4,5,6,7,8 ../mmdetection/tools/dist_train.sh /home/mlavery/scalemae_docker/mmdetection/projects/ViTDet/configs/vitdet_rcnn_xview.py \
+# CUDA_VISIBLE_DEVICES=1,2,3,4,5,6,7,8 ../mmdetection/tools/dist_train.sh ../mmdetection/projects/ViTDet/configs/vitdet_rcnn_xview.py \
+#      8
+CUDA_VISIBLE_DEVICES=1,2,3,4,5,6,7,8 ../mmdetection/tools/dist_train.sh ../mmdetection/projects/ViTDet/configs/vitdet_rcnn_xview_depth_6_1024.py \
      8
+# CUDA_VISIBLE_DEVICES=1,2,3,4,5,6,7,8 ../mmdetection/tools/dist_train.sh ../mmdetection/projects/ViTDet/configs/vit-L-mae_det-rcnn-xview.py \
+#      8

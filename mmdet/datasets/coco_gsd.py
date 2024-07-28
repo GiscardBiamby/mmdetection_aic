@@ -35,3 +35,6 @@ class CocoDatasetGSD(CocoDataset):
         # else:
         #     print(type(inputs))
         return data
+    
+    def __repr__(self) -> str:
+        return "CocoDatasetGSD"
