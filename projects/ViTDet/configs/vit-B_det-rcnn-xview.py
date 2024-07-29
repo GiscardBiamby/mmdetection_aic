@@ -1,7 +1,13 @@
-_base_ = [
-    '../../../configs/_base_/models/mask-rcnn_r50_fpn.py',
-    '../../ViTDINO-FSDP/xview_dataset.py',
-]
+# _base_ = [
+#     '../../../configs/_base_/models/mask-rcnn_r50_fpn.py',
+#     '../../ViTDINO_FSDP/xview_dataset.py',
+# ]
+
+from mmengine.config import read_base
+
+with read_base():
+    from ....configs._base_.models.maskrcnn_r50_fpn import *
+    from ...ViTDINO_FSDP.xview_dataset import *
 
 from mmdet.models import ViTMAE
 from functools import partial
@@ -18,7 +24,7 @@ batch_augments = [
 ]
 
 # model settings
-model = dict(
+model.merge(dict(
     data_preprocessor=dict(pad_size_divisor=32, batch_augments=batch_augments),
     backbone=dict(
         _delete_=True,
@@ -68,7 +74,7 @@ model = dict(
             num_classes=60
         )
     ),
-)
+))
 
 
 optim_wrapper = dict(

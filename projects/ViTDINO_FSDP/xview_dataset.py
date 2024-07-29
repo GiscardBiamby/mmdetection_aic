@@ -1,13 +1,17 @@
-_base_ = [
-    '../../configs/_base_/default_runtime.py',
-]
 
-from mmengine.runner.loops import IterBasedTrainLoop
+from mmengine.config import read_base
+
+with read_base():
+    from ...configs._base_.default_runtime import *
+
+# _base_ = [
+#     '../../configs/_base_/default_runtime.py',
+# ]
+
 from mmdet.datasets import CocoDatasetGSD
-from mmdet.datasets.transforms import Rotate
 
 # dataset settings
-data_root = "data/400_0"
+data_root = "data/xview/chipped/400_0"
 image_size = (512, 512)
 
 CLASSES = (
@@ -133,6 +137,7 @@ val_dataloader = dict(
         test_mode=True,
         pipeline=test_pipeline,
         ))
+
 test_dataloader = val_dataloader
 
 val_evaluator = dict(
@@ -140,7 +145,7 @@ val_evaluator = dict(
     metric=['bbox'],
     format_only=False,
     classwise=True,
-    )
+)
 test_evaluator = val_evaluator
 
 # 100 ep = 184375 iters * 64 images/iter / 118000 images/ep
