@@ -1,5 +1,5 @@
 _base_ = [
-    '../../../ViTDINO-FSDP/1batch.py'
+    '../../../ViTDINO_FSDP/1batch.py'
 ]
 
 from functools import partial

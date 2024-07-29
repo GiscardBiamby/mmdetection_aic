@@ -1,5 +1,5 @@
 _base_ = [
-    '/home/mlavery/scalemae_docker/mmdetection/projects/ViTDINO-FSDP/lsj-100e_coco-instance.py',
+    '/home/mlavery/scalemae_docker/mmdetection/projects/ViTDINO_FSDP/lsj-100e_coco-instance.py',
 ]
 
 from mmdet.models import ViTMAE

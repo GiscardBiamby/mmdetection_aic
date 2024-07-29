@@ -1,6 +1,6 @@
 _base_ = [
     '../../../configs/_base_/models/mask-rcnn_r50_fpn.py',
-    '../../ViTDINO-FSDP/xview_dataset_bs8.py',
+    '../../ViTDINO_FSDP/xview_dataset_bs8.py',
 ]
 
 from mmdet.models import ViTMAE
