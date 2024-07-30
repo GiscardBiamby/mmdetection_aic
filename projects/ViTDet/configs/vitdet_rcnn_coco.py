@@ -1,9 +1,3 @@
-# _base_ = [
-#     '../../../configs/_base_/models/mask-rcnn_r50_fpn.py',
-#     './coco_dataset.py',
-# ]
-# from mmdet.models.detectors import MaskRCNN
-
 from mmengine.config import read_base
 
 with read_base():
