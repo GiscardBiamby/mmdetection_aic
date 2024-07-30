@@ -36,7 +36,7 @@ def get_2d_sincos_pos_embed_with_resolution(
     pos_embed = get_2d_sincos_pos_embed_from_grid_torch(
         embed_dim, grid
     )  #  # (nxH*W, D/2)
-    pos_embed = pos_embed.reshape(n, h * w, embed_dim)
+    pos_embed = pos_embed.reshape(n, h, w, embed_dim)
     if cls_token:
         pos_embed = torch.cat(
             [
@@ -85,7 +85,6 @@ def get_1d_sincos_pos_embed_from_grid_torch(embed_dim, pos):
     return emb
 
 
-@MODELS.register_module()
 class LN2d(nn.Module):
     """A LayerNorm variant, popularized by Transformers, that performs
     pointwise mean and variance normalization over the channel dimension for
@@ -414,7 +413,7 @@ class PatchEmbed(nn.Module):
 
 
 @MODELS.register_module()
-class ViT(BaseModule):
+class ViTGSD(BaseModule):
     """Vision Transformer with support for patch or hybrid CNN input stage."""
 
     def __init__(self,
@@ -498,7 +497,15 @@ class ViT(BaseModule):
         assert all(input_res > 0), "input_res must be positive, probably negative if you forgot to assign it in the dataset"
         x = self.patch_embed(x)
         
-
+        pos_embed = get_2d_sincos_pos_embed_with_resolution(
+            x.shape[-1],
+            x.shape[1],
+            input_res,
+            cls_token=False,
+            device=x.device,
+        )
+        
+        x += pos_embed
         for blk in self.blocks:
             x = blk(x)
 

@@ -1,7 +1,3 @@
-# _base_ = [
-#     '../../../configs/_base_/models/mask-rcnn_r50_fpn.py',
-#     '../../ViTDINO_FSDP/xview_dataset.py',
-# ]
 from mmengine.config import read_base
 
 with read_base():
@@ -27,7 +23,7 @@ custom_imports = dict(imports=["projects.ViTDet.vitdet"])
 
 backbone_norm_cfg = dict(type=LN, requires_grad=True, eps=1e-6)
 norm_cfg = dict(type=LN2d, requires_grad=True)
-image_size = (512, 512)
+image_size = (400, 400)
 batch_augments = [dict(type=BatchFixedSizePad, size=image_size, pad_mask=True)]
 
 # model settings

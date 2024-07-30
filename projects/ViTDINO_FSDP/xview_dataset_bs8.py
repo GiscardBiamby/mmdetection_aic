@@ -165,6 +165,22 @@ val_evaluator = dict(
 )
 test_evaluator = val_evaluator
 
+optim_wrapper = dict(
+    type='AmpOptimWrapper',
+    constructor='LayerDecayOptimizerConstructor',
+    paramwise_cfg={
+        'decay_rate': 0.7,
+        'decay_type': 'layer_wise',
+        'num_layers': 12,
+    },
+    optimizer=dict(
+        type='AdamW',
+        lr=0.0001 / 8,
+        betas=(0.9, 0.999),
+        weight_decay=0.1,
+    )
+)
+
 # 280_000 iters = 2800 iters/ep * 100 ep
 max_iters = 280000
 interval = 5000
