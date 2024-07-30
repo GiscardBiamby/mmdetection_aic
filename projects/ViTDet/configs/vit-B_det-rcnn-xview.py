@@ -1,13 +1,10 @@
-# _base_ = [
-#     '../../../configs/_base_/models/mask-rcnn_r50_fpn.py',
-#     '../../ViTDINO_FSDP/xview_dataset.py',
-# ]
-
 from mmengine.config import read_base
 
 with read_base():
-    from ....configs._base_.models.maskrcnn_r50_fpn import *
-    from ...ViTDINO_FSDP.xview_dataset import *
+    # pylint: disable-next=E0402,W0401,W0614
+    from ....configs._base_.models.maskrcnn_r50_fpn import *   # noqa: F401,F403,W0401
+    # pylint: disable-next=E0402,W0401,W0614
+    from ...ViTDINO_FSDP.xview_dataset import *   # noqa: F401,F403,W0401
 
 from mmdet.models import ViTMAE
 from functools import partial

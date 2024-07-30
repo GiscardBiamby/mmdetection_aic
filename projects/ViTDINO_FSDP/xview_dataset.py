@@ -1,12 +1,8 @@
-
 from mmengine.config import read_base
 
 with read_base():
     from ...configs._base_.default_runtime import *
 
-# _base_ = [
-#     '../../configs/_base_/default_runtime.py',
-# ]
 
 from mmdet.datasets import CocoDatasetGSD
 
@@ -158,7 +154,6 @@ val_dataloader = dict(
         test_mode=True,
         pipeline=test_pipeline,
         ))
-
 test_dataloader = val_dataloader
 
 val_evaluator = dict(
