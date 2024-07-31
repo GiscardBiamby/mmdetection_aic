@@ -146,11 +146,14 @@ class DetDataPreprocessor(ImgDataPreprocessor):
             for batch_aug in self.batch_augments:
                 inputs, data_samples = batch_aug(inputs, data_samples)
 
-        # For inference
-        # return {'inputs': inputs, 'data_samples': data_samples, "input_res": torch.tensor([-1] * len(inputs))}
-        input_res = torch.stack(data["input_res"])
-        return {'inputs': inputs, 'data_samples': data_samples, "input_res": input_res}
+        if isinstance(data["input_res"], list):
+            # Training case
+            input_res = torch.stack(data["input_res"])
+        else:
+            # SAHI inference case
+            input_res = data["input_res"]
 
+        return {'inputs': inputs, 'data_samples': data_samples, "input_res": input_res}
 
     def _get_pad_shape(self, data: dict) -> List[tuple]:
         """Get the pad_shape of each image based on data and
