@@ -77,6 +77,3 @@ optim_wrapper = dict(
         weight_decay=0.1,
     ))
 custom_hooks = [dict(type='Fp16CompresssionHook')]
-
-resume = True
-load_from = "/home/mlavery/scalemae_docker/data/work_dirs/vitdet_rcnn_xview_depth_6_1024/iter_5000.pth"
