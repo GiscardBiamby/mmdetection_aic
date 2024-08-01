@@ -121,7 +121,7 @@ optim_wrapper = dict(
         weight_decay=0.1,
     ),
 )
-# auto_scale_lr = dict(base_batch_size=64, enable=True)
+auto_scale_lr = dict(base_batch_size=64, enable=True)
 
 epochs = 100
 val_interval = 1
