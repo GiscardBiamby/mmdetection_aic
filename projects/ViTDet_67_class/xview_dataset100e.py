@@ -127,7 +127,7 @@ epochs = 100
 val_interval = 1
 param_scheduler = [
     dict(
-        type='LinearLR', start_factor=0.001, begin=0, end=1, by_epoch=True),
+        type='LinearLR', start_factor=0.001, begin=0, end=250, by_epoch=False),
     dict(
         type='MultiStepLR',
         begin=0,
