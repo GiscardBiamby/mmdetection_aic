@@ -24,7 +24,9 @@ echo "starting training"
 #      8
 # CUDA_VISIBLE_DEVICES=1,2,3,4,5,6,7,8 ../mmdetection/tools/dist_train.sh ../mmdetection/projects/ViTDet/configs/vitdet_rcnn_xview.py \
 #      8
-CUDA_VISIBLE_DEVICES=1,2,3,4,5,6,7,8 ../mmdetection/tools/dist_train.sh ../mmdetection/projects/ViTDet/configs/vitdet_rcnn_xview_depth_6_1024.py \
+# CUDA_VISIBLE_DEVICES=1,2,3,4,5,6,7,8 ../mmdetection/tools/dist_train.sh ../mmdetection/projects/ViTDet/configs/vitdet_rcnn_xview_depth_6_1024.py \
+#      8
+CUDA_VISIBLE_DEVICES=1,2,3,4,5,6,7,8 ../mmdetection/tools/dist_train.sh ../mmdetection/projects/ViTDet/configs/vit-L-mae_det_gsd.py \
      8
 # CUDA_VISIBLE_DEVICES=1,2,3,4,5,6,7,8 ../mmdetection/tools/dist_train.sh ../mmdetection/projects/ViTDet/configs/vit-L-mae_det-rcnn-xview.py \
 #      8
