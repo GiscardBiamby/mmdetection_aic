@@ -23,7 +23,7 @@ custom_imports = dict(imports=["projects.ViTDet.vitdet"])
 
 backbone_norm_cfg = dict(type=LN, requires_grad=True, eps=1e-6)
 norm_cfg = dict(type=LN2d, requires_grad=True)
-image_size = (400, 400)
+image_size = (512, 512)
 batch_augments = [dict(type=BatchFixedSizePad, size=image_size, pad_mask=True)]
 
 # model settings
