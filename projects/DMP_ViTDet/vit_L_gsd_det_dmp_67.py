@@ -5,7 +5,7 @@ with read_base():
     from mmdet.configs._base_.models.mask_rcnn_r50_fpn import *  # noqa: F401,F403,W0401,W0614
 
     # pylint: disable-next=E0402,W0401,W0614
-    from xview_dataset_dmp_100e import *  # noqa: F401,F403,W0401,W0614
+    from .xview_dataset_dmp_100e import *  # noqa: F401,F403,W0401,W0614
 
 from torch.nn import LayerNorm as LN
 

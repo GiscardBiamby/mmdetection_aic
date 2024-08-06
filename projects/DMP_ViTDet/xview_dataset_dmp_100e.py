@@ -1,7 +1,7 @@
 from mmengine.config import read_base
 
 with read_base():
-    from ....configs._base_.default_runtime import *
+    from ...configs._base_.default_runtime import *
 
 
 from mmdet.datasets import CocoDatasetGSD
