@@ -148,6 +148,7 @@ default_hooks = dict(
 )
 vis_backends = [
     dict(type='LocalVisBackend'),
+    dict(type='TensorboardVisBackend')
 ]
 visualizer = dict(
     type='DetLocalVisualizer', vis_backends=vis_backends, name='visualizer')
