@@ -45,6 +45,9 @@ model.merge(
             + list(range(12, 17))
             + list(range(18, 23)),
             use_rel_pos=True,
+            init_cfg=dict(
+                type="Pretrained", checkpoint="weights/epoch_100_Passenger_Car.pth"
+            ),
         ),
         neck=dict(
             _delete_=True,
