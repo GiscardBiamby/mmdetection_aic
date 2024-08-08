@@ -66,6 +66,7 @@ test_pipeline = [
                    'scale_factor', "input_res", "instances"))
 ]
 
+# define per gpu batch size here, lr and max-iter should will be scaled automatically.
 train_dataloader = dict(
     batch_size=1,
     num_workers=8,
@@ -121,6 +122,7 @@ optim_wrapper = dict(
         weight_decay=0.1,
     ),
 )
+# NOTE: `auto_scale_lr` is for automatically scaling LR, basically 16 x 4 gpus = 64 batch size
 auto_scale_lr = dict(base_batch_size=64, enable=True)
 
 epochs = 100
@@ -146,7 +148,7 @@ train_cfg = dict(
 val_cfg = dict(type='ValLoop')
 test_cfg = dict(type='TestLoop')
 
-default_hooks = dict(
+default_hooks.merge(dict(
     logger=dict(type='LoggerHook', interval=50),
     checkpoint=dict(
         type='CheckpointHook',
@@ -155,7 +157,7 @@ default_hooks = dict(
         interval=val_interval,
         max_keep_ckpts=5,
         save_best='auto'),
-)
+))
 vis_backends = [
     dict(type='LocalVisBackend'),
     dict(type='WandbVisBackend',
