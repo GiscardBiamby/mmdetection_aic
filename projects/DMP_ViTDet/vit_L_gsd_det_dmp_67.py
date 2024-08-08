@@ -74,3 +74,5 @@ model.merge(
 )
 
 custom_hooks = [dict(type=Fp16CompresssionHook)]
+load_from="weights/epoch_100_Passenger_Car.pth"
+resume=False
