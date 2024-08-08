@@ -5,7 +5,7 @@ with read_base():
     from mmdet.configs._base_.models.mask_rcnn_r50_fpn import *  # noqa: F401,F403,W0401,W0614
 
     # pylint: disable-next=E0402,W0401,W0614
-    from .xview_dataset_dmp_100e import *  # noqa: F401,F403,W0401,W0614
+    from .dmp_dataset_100e import *  # noqa: F401,F403,W0401,W0614
 
 from torch.nn import LayerNorm as LN
 
@@ -45,9 +45,6 @@ model.merge(
             + list(range(12, 17))
             + list(range(18, 23)),
             use_rel_pos=True,
-            init_cfg=dict(
-                type="Pretrained", checkpoint="weights/scalemae-vitlarge-800.pth"
-            ),
         ),
         neck=dict(
             _delete_=True,
