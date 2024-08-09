@@ -2,7 +2,7 @@ from mmengine.config import read_base
 
 with read_base():
     from ...configs._base_.default_runtime import *
-    from .util import GSDDropout
+    from .util import GSDDropout, CheckAddGSD
 
 
 from mmdet.datasets import CocoDatasetGSD
@@ -43,7 +43,8 @@ train_pipeline = [
     dict(type='Pad', size=image_size, pad_val=dict(img=(114, 114, 114))),
     dict(type='FilterAnnotations', min_gt_bbox_wh=(1, 1)),
     dict(type='FilterAnnotations', by_mask=True),
-    dict(type=GSDDropout, prob=0.1),
+    dict(type=CheckAddGSD, gsd=0.45608300352667663),
+    dict(type=GSDDropout, prob=0.1, gsd=0.45608300352667663),
     dict(type='PackDetInputs', meta_keys=('img_id', 'img_path', 'ori_shape', 'img_shape', 'scale_factor', 'flip', 'flip_direction', "input_res"))
 ]
 
