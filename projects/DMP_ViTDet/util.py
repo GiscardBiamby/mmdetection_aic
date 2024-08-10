@@ -10,6 +10,8 @@ class CheckAddGSD(BaseTransform):
     def transform(self, results):
         if "input_res" not in results:
             results["input_res"] = self.gsd
+        elif not isinstance(results["input_res"], int | float):
+            results["input_res"] = self.gsd
         elif results["input_res"] < 0:
             results["input_res"] = self.gsd
         return results
