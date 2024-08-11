@@ -90,6 +90,8 @@ val_dataloader = dict(
         data_prefix=dict(img='comsat_coco_val_images_400_25/'),
         test_mode=True,
         pipeline=test_pipeline,
+        filter_cfg=dict(filter_empty_gt=True, min_size=1),
+        indices=15000
         ))
 test_dataloader = val_dataloader
 
