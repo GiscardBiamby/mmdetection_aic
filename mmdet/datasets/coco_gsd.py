@@ -11,8 +11,9 @@ class CocoDatasetGSD(CocoDataset):
         data_info = super().parse_data_info(raw_data_info)
         img_info = raw_data_info['raw_img_info']
         
-        assert "input_res" in img_info
-        data_info["input_res"] = img_info["input_res"]
+        # assert "input_res" in img_info
+        if "input_res" in img_info:
+            data_info["input_res"] = img_info["input_res"]
         return data_info
         
     def __getitem__(self, idx: int) -> dict:
