@@ -53,6 +53,7 @@ test_pipeline = [
     dict(type='LoadAnnotations', with_bbox=True, with_mask=True),
     dict(type='Resize', scale=image_size, keep_ratio=True),
     dict(type='Pad', size=image_size, pad_val=dict(img=(114, 114, 114))),
+    dict(type=CheckAddGSD, gsd=0.45608300352667663),
     dict(
         type='PackDetInputs',
         meta_keys=('img_id', 'img_path', 'ori_shape', 'img_shape',
