@@ -122,5 +122,6 @@ work_dirs/
 *.py~
 *.sh~
 
+weights
 weights/
 weights_ignore/
