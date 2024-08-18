@@ -126,24 +126,24 @@ optim_wrapper = dict(
 auto_scale_lr = dict(base_batch_size=64, enable=True)
 
 epochs = 100
-val_interval = 1
+val_interval = 5
 param_scheduler = [
     dict(
         type='LinearLR', start_factor=0.001, begin=0, end=250, by_epoch=False),
     dict(
         type='MultiStepLR',
         begin=0,
-        end=100,
-        milestones=[88, 94],
-        gamma=0.1,
+        end=epochs,
+        milestones=[50, 75, 85],
+        gamma=0.5,
         by_epoch=True,
     )
 ]
 
 train_cfg = dict(
     type='EpochBasedTrainLoop',
-    max_epochs=100,
-    val_interval=1,
+    max_epochs=epochs,
+    val_interval=val_interval,
 )
 val_cfg = dict(type='ValLoop')
 test_cfg = dict(type='TestLoop')
