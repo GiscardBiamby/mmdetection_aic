@@ -5,9 +5,7 @@ with read_base():
     from mmdet.configs._base_.models.mask_rcnn_r50_fpn import *  # noqa: F401,F403,W0401,W0614
 
     # pylint: disable-next=E0402,W0401,W0614
-    from .xview_dataset_parents import *  # noqa: F401,F403,W0401,W0614
-
-from functools import partial
+    from ..datasets.xview400_dataset_parent import *  # noqa: F401,F403,W0401,W0614
 
 from torch.nn import LayerNorm as LN
 
@@ -24,7 +22,7 @@ backbone_norm_cfg = dict(type=LN, requires_grad=True, eps=1e-6)
 norm_cfg = dict(type=LN2d, requires_grad=True)
 image_size = (400, 400)
 batch_augments = [dict(type=BatchFixedSizePad, size=image_size, pad_mask=True)]
-NUM_CLASSES=7
+# NUM_CLASSES=7 # This is defined in the xviewXX_dataset_parents/child
 
 # model settings
 model.merge(
