@@ -1,0 +1,11 @@
+{
+    "exclude": [
+        "**/node_modules",
+        "**/__pycache__",
+        "src/experimental",
+        "src/typestubs",
+        "data",
+        "weights",
+        "work_dirs",
+    ],
+}
