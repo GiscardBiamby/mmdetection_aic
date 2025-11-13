@@ -1,26 +1,28 @@
+import torch
+
 from mmdet.datasets import CocoDataset
 from mmdet.registry import DATASETS
-import torch
+
 
 @DATASETS.register_module()
 class CocoDatasetGSD(CocoDataset):
     def __init__(self, *args, **kwargs):
         super(CocoDatasetGSD, self).__init__(*args, **kwargs)
-        
+
     def parse_data_info(self, raw_data_info: dict) -> dict:
         data_info = super().parse_data_info(raw_data_info)
-        img_info = raw_data_info['raw_img_info']
-        
+        img_info = raw_data_info["raw_img_info"]
+
         # assert "input_res" in img_info
         if "input_res" in img_info:
             data_info["input_res"] = img_info["input_res"]
         return data_info
-        
+
     def __getitem__(self, idx: int) -> dict:
         # coco dataset returns a dict
         # {
         #   "inputs": ...
-        #   "data_samples": ... 
+        #   "data_samples": ...
         # }
         data = super(CocoDatasetGSD, self).__getitem__(idx)
         metainfo = data["data_samples"].metainfo
@@ -36,6 +38,6 @@ class CocoDatasetGSD(CocoDataset):
         # else:
         #     print(type(inputs))
         return data
-    
+
     def __repr__(self) -> str:
         return "CocoDatasetGSD"
