@@ -85,11 +85,11 @@ model = dict(
 )
 # Define train pipeline
 train_pipeline = [
-    dict(type='LoadImageFromFile', backend_args=backend_args),
-    dict(type='LoadAnnotations', with_bbox=True),
-    dict(type='Resize', scale=chip_size, keep_ratio=True),
-    dict(type='RandomFlip', prob=0.5),
-    dict(type='PackDetInputs')
+    dict(type="LoadImageFromFile", backend_args=backend_args),
+    dict(type="LoadAnnotations", with_bbox=True),
+    dict(type="Resize", scale=chip_size, keep_ratio=True),
+    dict(type="RandomFlip", prob=0.5),
+    dict(type="PackDetInputs"),
 ]
 train_dataloader = dict(
     batch_size=2,
@@ -107,7 +107,6 @@ train_dataloader = dict(
         backend_args=backend_args,
     ),
 )
-
 val_pipeline = [
     dict(type="LoadImageFromFile", backend_args=backend_args),
     dict(type="Resize", scale=chip_size, keep_ratio=True),
@@ -118,7 +117,6 @@ val_pipeline = [
         meta_keys=("img_id", "img_path", "ori_shape", "img_shape", "scale_factor"),
     ),
 ]
-
 val_dataloader = dict(
     batch_size=1,
     num_workers=2,
@@ -136,9 +134,7 @@ val_dataloader = dict(
         backend_args=backend_args,
     ),
 )
-
 test_dataloader = val_dataloader
-
 val_evaluator = dict(
     type="CocoMetric",
     ann_file=data_root + "xview_coco_val_200_0.json",
@@ -147,3 +143,46 @@ val_evaluator = dict(
     backend_args=backend_args,
 )
 test_evaluator = val_evaluator
+
+# * NOTE: `auto_scale_lr` is for automatically scaling LR, basically 16 x 4 gpus = 64 batch size
+# * coco1x Default setting for scaling LR automatically
+# *   - `enable` means enable scaling LR automatically
+# *       or not by default.
+# *   - `base_batch_size` = (8 GPUs) x (2 samples per GPU).
+auto_scale_lr = dict(base_batch_size=16, enable=True)
+
+# * An epoch on 6x4090 takes ~12 minutes, and eval takes ~5min. We don't want eval to
+# *   take up a significant portion of training time so eval interval of 5 seems like the
+# *   lowest reasonable setting.
+epochs = 60
+val_interval = 5
+param_scheduler = [
+    dict(type="LinearLR", start_factor=0.001, begin=0, end=250, by_epoch=False),
+    dict(
+        type="MultiStepLR",
+        begin=0,
+        end=epochs,
+        milestones=[50, 75, 85],
+        gamma=0.5,
+        by_epoch=True,
+    ),
+]
+train_cfg = dict(
+    type="EpochBasedTrainLoop",
+    max_epochs=epochs,
+    val_interval=val_interval,
+)
+val_cfg = dict(type="ValLoop")
+test_cfg = dict(type="TestLoop")
+
+default_hooks = dict(
+    logger=dict(type="LoggerHook", interval=50),
+    checkpoint=dict(
+        type="CheckpointHook",
+        by_epoch=True,
+        save_last=True,
+        interval=val_interval,
+        max_keep_ckpts=5,
+        save_best="auto",
+    ),
+)
