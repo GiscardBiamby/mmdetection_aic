@@ -58,7 +58,6 @@ class BaseDetector(BaseModel, metaclass=ABCMeta):
     def forward(self,
                 inputs: torch.Tensor,
                 data_samples: OptSampleList = None,
-                input_res: Tensor = None,
                 mode: str = 'tensor') -> ForwardResults:
         """The unified entry for a forward process in both training and test.
 
@@ -89,13 +88,12 @@ class BaseDetector(BaseModel, metaclass=ABCMeta):
             - If ``mode="predict"``, return a list of :obj:`DetDataSample`.
             - If ``mode="loss"``, return a dict of tensor.
         """
-        assert input_res is not None, 'input_res should be provided'
         if mode == 'loss':
-            return self.loss(inputs, data_samples, input_res=input_res)
+            return self.loss(inputs, data_samples)
         elif mode == 'predict':
-            return self.predict(inputs, data_samples, input_res=input_res)
+            return self.predict(inputs, data_samples)
         elif mode == 'tensor':
-            return self._forward(inputs, data_samples, input_res=input_res)
+            return self._forward(inputs, data_samples)
         else:
             raise RuntimeError(f'Invalid mode "{mode}". '
                                'Only supports loss, predict and tensor mode')
