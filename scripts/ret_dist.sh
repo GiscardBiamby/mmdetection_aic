@@ -4,6 +4,7 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 MMDET_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 CONFIG_PATH="projects/nadirdet/configs/retina_xview_clean.py"
+CONFIG_PATH="projects/nadirdet/configs/retinanet_r101_xview.py"
 CHECKPOINTS_DIR="${MMDET_ROOT}/checkpoints"
 WEIGHTS_URL="https://download.openmmlab.com/mmdetection/v2.0/retinanet/retinanet_r101_fpn_1x_coco/retinanet_r101_fpn_1x_coco_20200130-7a93545f.pth"
 WEIGHTS_FILE="${CHECKPOINTS_DIR}/retinanet_r101_fpn_1x_coco_20200130-7a93545f.pth"

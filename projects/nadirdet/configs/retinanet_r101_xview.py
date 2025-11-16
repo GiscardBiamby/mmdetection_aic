@@ -1,4 +1,4 @@
-_base_ = "../../configs/retinanet/retinanet_r101_fpn_1x_coco.py"
+_base_ = "../../../configs/retinanet/retinanet_r101_fpn_1x_coco.py"
 
 data_root = "data/xview/chipped/200_0/"
 dataset_type = "CocoDataset"
