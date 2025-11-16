@@ -3,10 +3,8 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 MMDET_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
-CONFIG_PATH="projects/nadirdet/retinanet_r101_xview.py"
+CONFIG_PATH="projects/nadirdet/configs/retina_xview_clean.py"
 CHECKPOINTS_DIR="${MMDET_ROOT}/checkpoints"
-# WEIGHTS_URL="https://download.openmmlab.com/mmdetection/v2.0/retinanet/retinanet_r101_fpn_mstrain_3x_coco/retinanet_r101_fpn_mstrain_3x_coco_20210720_214650-7ee888e0.pth"
-# WEIGHTS_FILE="${CHECKPOINTS_DIR}/retinanet_r101_fpn_mstrain_3x_coco_20210720_214650-7ee888e0.pth"
 WEIGHTS_URL="https://download.openmmlab.com/mmdetection/v2.0/retinanet/retinanet_r101_fpn_1x_coco/retinanet_r101_fpn_1x_coco_20200130-7a93545f.pth"
 WEIGHTS_FILE="${CHECKPOINTS_DIR}/retinanet_r101_fpn_1x_coco_20200130-7a93545f.pth"
 WORK_DIR="${MMDET_ROOT}/work_dirs/xview_retinanet"
@@ -37,8 +35,13 @@ cd "${MMDET_ROOT}"
 #     --cfg-options load_from="${WEIGHTS_FILE}"
 
 # * Multi-gpu training
-GPUS=4                    # set to 2, 4, 6 as needed
-
-bash tools/dist_train.sh "${CONFIG_PATH}" $GPUS \
+GPUS=4
+CUDA_VISIBLE_DEVICES=0,1,2,3 torchrun --nproc_per_node=$GPUS \
+    tools/train.py "${CONFIG_PATH}" \
     --work-dir "${WORK_DIR}" \
-    --cfg-options auto_scale_lr.enable=True
+    --launcher pytorch
+    # --cfg-options \
+    # train_dataloader.batch_size=64 \
+    # val_dataloader.batch_size=64 \
+    # test_dataloader.batch_size=64
+
