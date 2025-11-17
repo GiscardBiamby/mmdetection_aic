@@ -1,14 +1,9 @@
-custom_imports = dict(
-    imports=[
-        "projects.nadirdet.nadirdet.xview_coco_metric",
-    ],
-    allow_failed_imports=False,
-)
+_base_ = ".xview_512_0.py"
 
 # dataset settings
 dataset_type = "CocoDataset"
-data_root = "data/xview/chipped/200_0/"
-chip_size = (200, 200)  # The actual image size, before any resizing/augmentations
+data_root = "data/xview/chipped/512_0/"
+chip_size = (512, 512)  # The actual image size, before any resizing/augmentations
 
 # Example to use different file client
 # Method 1: simply set the data root and let the file I/O module
@@ -24,71 +19,6 @@ chip_size = (200, 200)  # The actual image size, before any resizing/augmentatio
 #         'data/': 's3://openmmlab/datasets/detection/'
 #     }))
 backend_args = None
-
-XVIEW_CLASSES = (
-    "Fixed-wing Aircraft",
-    "Small Aircraft",
-    "Cargo Plane",
-    "Helicopter",
-    "Passenger Vehicle",
-    "Small Car",
-    "Bus",
-    "Pickup Truck",
-    "Utility Truck",
-    "Truck",
-    "Cargo Truck",
-    "Truck w/Box",
-    "Truck Tractor",
-    "Trailer",
-    "Truck w/Flatbed",
-    "Truck w/Liquid",
-    "Crane Truck",
-    "Railway Vehicle",
-    "Passenger Car",
-    "Cargo Car",
-    "Flat Car",
-    "Tank car",
-    "Locomotive",
-    "Maritime Vessel",
-    "Motorboat",
-    "Sailboat",
-    "Tugboat",
-    "Barge",
-    "Fishing Vessel",
-    "Ferry",
-    "Yacht",
-    "Container Ship",
-    "Oil Tanker",
-    "Engineering Vehicle",
-    "Tower crane",
-    "Container Crane",
-    "Reach Stacker",
-    "Straddle Carrier",
-    "Mobile Crane",
-    "Dump Truck",
-    "Haul Truck",
-    "Scraper/Tractor",
-    "Front loader/Bulldozer",
-    "Excavator",
-    "Cement Mixer",
-    "Ground Grader",
-    "Hut/Tent",
-    "Shed",
-    "Building",
-    "Aircraft Hangar",
-    "Damaged Building",
-    "Facility",
-    "Construction Site",
-    "Vehicle Lot",
-    "Helipad",
-    "Storage Tank",
-    "Shipping container lot",
-    "Shipping Container",
-    "Pylon",
-    "Tower",
-)
-NUM_CLASSES = len(XVIEW_CLASSES)
-metainfo = dict(classes=XVIEW_CLASSES)
 
 
 # * Data pipelines
@@ -122,8 +52,8 @@ train_dataloader = dict(
     dataset=dict(
         type=dataset_type,
         data_root=data_root,
-        ann_file="xview_coco_train_200_0.json",
-        data_prefix=dict(img="xview_coco_train_images_200_0/"),
+        ann_file="xview_coco_train_512_0.json",
+        data_prefix=dict(img="xview_coco_train_images_512_0/"),
         filter_cfg=dict(
             filter_empty_gt=False, min_size=1
         ),  # Allow training on empty chips so model learns to handle background
@@ -141,8 +71,8 @@ val_dataloader = dict(
     dataset=dict(
         type=dataset_type,
         data_root=data_root,
-        ann_file="xview_coco_val_200_0.json",
-        data_prefix=dict(img="xview_coco_val_images_200_0/"),
+        ann_file="xview_coco_val_512_0.json",
+        data_prefix=dict(img="xview_coco_val_images_512_0/"),
         test_mode=True,
         pipeline=val_pipeline,
         metainfo=metainfo,
@@ -153,14 +83,12 @@ test_dataloader = val_dataloader
 
 val_evaluator = dict(
     type="XViewCocoMetric",
-    ann_file=data_root + "xview_coco_val_200_0.json",
+    ann_file=data_root + "xview_coco_val_512_0.json",
     metric=["bbox"],
     format_only=False,
     backend_args=backend_args,
-    # Note: only affects AR@K in the official pycocotools. Works fine in cocobetter version of
-    # pycocotools.:
-    # TODO: Update max_dets if we ever eval on un-chipped images:
-    max_dets=(500, 1000, 10000),
-    summary_ious=(0.25,0.50, 0.75),
+    # TODO: update proposal_nums to match dataset stats
+    # # again, only affects AR@K
+    # proposal_nums=(100, 300, 1000),
 )
 test_evaluator = val_evaluator

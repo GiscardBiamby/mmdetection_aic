@@ -9,6 +9,7 @@ custom_imports = dict(
         "projects.nadirdet.nadirdet",
         "mmdet.visualization",
         "mmdet.visualization.local_visualizer",
+        "projects.nadirdet.nadirdet.xview_coco_metric",
     ],
     allow_failed_imports=False,
 )
@@ -66,7 +67,7 @@ param_scheduler = [
     ),
 ]
 optim_wrapper = dict(
-    type="AmpOptimWrapper",
+    type="OptimWrapper",
     optimizer=dict(
         _delete_=True,
         type="AdamW",

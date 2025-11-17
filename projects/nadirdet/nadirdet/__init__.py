@@ -1,3 +1,3 @@
-from .coco_metric_custom_maxdet import XViewCocoMetric
+from .xview_coco_metric import XViewCocoMetric
 
 __all__ = ["XViewCocoMetric"]
