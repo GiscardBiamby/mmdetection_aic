@@ -1,7 +1,5 @@
 _base_ = [
     "../../../configs/_base_/models/retinanet_r50_fpn.py",
-    # "../../../configs/_base_/schedules/schedule_1x.py",
-    # "../../../configs/_base_/default_runtime.py",
     "./_base_/schedules/xv_schedule_1x.py",
     "./_base_/default_runtime.py",
     "./datasets/xview_200_0.py",

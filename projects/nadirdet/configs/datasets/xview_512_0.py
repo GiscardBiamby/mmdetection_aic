@@ -1,4 +1,4 @@
-_base_ = ".xview_512_0.py"
+_base_ = "./xview_200_0.py"
 
 # dataset settings
 dataset_type = "CocoDataset"
@@ -45,7 +45,7 @@ val_pipeline = [
 test_pipeline = val_pipeline
 
 train_dataloader = dict(
-    batch_size=64,
+    batch_size=32,
     num_workers=8,  # This setting is per-gpu
     persistent_workers=True,
     sampler=dict(type="DefaultSampler", shuffle=True),
@@ -58,12 +58,11 @@ train_dataloader = dict(
             filter_empty_gt=False, min_size=1
         ),  # Allow training on empty chips so model learns to handle background
         pipeline=train_pipeline,
-        metainfo=metainfo,
         backend_args=backend_args,
     ),
 )
 val_dataloader = dict(
-    batch_size=64,
+    batch_size=32,
     num_workers=4,  # This setting is per-gpu
     persistent_workers=True,
     drop_last=False,
@@ -75,7 +74,6 @@ val_dataloader = dict(
         data_prefix=dict(img="xview_coco_val_images_512_0/"),
         test_mode=True,
         pipeline=val_pipeline,
-        metainfo=metainfo,
         backend_args=backend_args,
     ),
 )
