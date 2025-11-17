@@ -628,7 +628,7 @@ class ResNet(BaseModule):
             for param in m.parameters():
                 param.requires_grad = False
 
-    def forward(self, x, input_res=None):
+    def forward(self, x):
         """Forward function."""
         if self.deep_stem:
             x = self.stem(x)

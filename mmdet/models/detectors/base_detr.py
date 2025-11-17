@@ -82,8 +82,7 @@ class DetectionTransformer(BaseDetector, metaclass=ABCMeta):
         pass
 
     def loss(self, batch_inputs: Tensor,
-             batch_data_samples: SampleList,
-             input_res: Tensor = None) -> Union[dict, list]:
+             batch_data_samples: SampleList) -> Union[dict, list]:
         """Calculate losses from a batch of inputs and data samples.
 
         Args:
@@ -96,7 +95,7 @@ class DetectionTransformer(BaseDetector, metaclass=ABCMeta):
         Returns:
             dict: A dictionary of loss components
         """
-        img_feats = self.extract_feat(batch_inputs, input_res)
+        img_feats = self.extract_feat(batch_inputs)
         head_inputs_dict = self.forward_transformer(img_feats,
                                                     batch_data_samples)
         losses = self.bbox_head.loss(
@@ -107,8 +106,7 @@ class DetectionTransformer(BaseDetector, metaclass=ABCMeta):
     def predict(self,
                 batch_inputs: Tensor,
                 batch_data_samples: SampleList,
-                rescale: bool = True,
-                input_res: Tensor = None) -> SampleList:
+                rescale: bool = True) -> SampleList:
         """Predict results from a batch of inputs and data samples with post-
         processing.
 
@@ -132,7 +130,7 @@ class DetectionTransformer(BaseDetector, metaclass=ABCMeta):
             - bboxes (Tensor): Has a shape (num_instances, 4),
               the last dimension 4 arrange as (x1, y1, x2, y2).
         """
-        img_feats = self.extract_feat(batch_inputs, input_res=input_res)
+        img_feats = self.extract_feat(batch_inputs)
         head_inputs_dict = self.forward_transformer(img_feats,
                                                     batch_data_samples)
         results_list = self.bbox_head.predict(
@@ -226,7 +224,7 @@ class DetectionTransformer(BaseDetector, metaclass=ABCMeta):
         head_inputs_dict.update(decoder_outputs_dict)
         return head_inputs_dict
 
-    def extract_feat(self, batch_inputs: Tensor, input_res: Tensor) -> Tuple[Tensor]:
+    def extract_feat(self, batch_inputs: Tensor) -> Tuple[Tensor]:
         """Extract features.
 
         Args:
@@ -236,7 +234,7 @@ class DetectionTransformer(BaseDetector, metaclass=ABCMeta):
             tuple[Tensor]: Tuple of feature maps from neck. Each feature map
             has shape (bs, dim, H, W).
         """
-        x = self.backbone(batch_inputs, input_res=input_res)
+        x = self.backbone(batch_inputs)
         if self.with_neck:
             x = self.neck(x)
         return x

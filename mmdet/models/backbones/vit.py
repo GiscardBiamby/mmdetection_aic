@@ -432,12 +432,9 @@ class ViT(BaseModule):
                 self.init_cfg.checkpoint, logger=logger, map_location='cpu')
             if 'model' in ckpt:
                 _state_dict = ckpt['model']
-            else:
-                _state_dict = ckpt
             self.load_state_dict(_state_dict, False)
 
-    def forward(self, x, input_res=None):
-        assert input_res is not None, "Failed to pass input_res, I've made it a required value"
+    def forward(self, x):
         x = self.patch_embed(x)
         if self.pos_embed is not None:
             x = x + get_abs_pos(self.pos_embed, self.pretrain_use_cls_token,
