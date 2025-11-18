@@ -20,12 +20,19 @@ load_from = "https://download.openmmlab.com/mmdetection/v2.0/faster_rcnn/faster_
 model = dict(
     backbone=dict(norm_eval=False, frozen_stages=-1),
     # * Customize anchors for xview:
-    # * Effective sizes (scale × stride):
+    # * Effective sizes (scale=[1, 2, 4, 8] × stride):
     #   * Level P2 (stride 4): 4, 8, 16 32 px
     #   * Level P3 (stride 8): 8, 16, 32 64 px
     #   * Level P4 (stride 16): 16, 32, 64 128 px
     #   * Level P5 (stride 32): 32, 64, 128 256 px
     #   * Level P6 (stride 64): 64, 128, 256 512 px
+
+    # * Effective sizes (scale=[2, 4, 8] × stride):
+    #   * Level P2 (stride 4): 8, 16 32 px
+    #   * Level P3 (stride 8): 16, 32 64 px
+    #   * Level P4 (stride 16): 32, 64 128 px
+    #   * Level P5 (stride 32): 64, 128 256 px
+    #   * Level P6 (stride 64): 128, 256 512 px
     # We could also try `ratios=[0.75, 1.0, 1.5]``
     #
     # Note: should not need to change anchor sizes if you change to different chip sizes. if you
@@ -35,9 +42,9 @@ model = dict(
     rpn_head=dict(
         anchor_generator=dict(
             type="AnchorGenerator",
-            scales=[1, 2, 4, 8],
-            ratios=[0.5, 1.0, 2.0],
-            strides=[4, 8, 16, 32, 64],  # keep FPN defaults
+            scales=[2, 4, 8],               # defaults are [8]
+            ratios=[0.5, 1.0, 2.0],         # defaults are [0.5, 1.0, 2.0]
+            strides=[4, 8, 16, 32, 64],     # keep Standard FPN strides (P2-P6) defaults of [4, 8, 16, 32, 64]
         ),
     ),
     roi_head=dict(
@@ -46,23 +53,24 @@ model = dict(
         )
     ),
     # # Because xview_512 has a large number of objects per image (up to 995):
-    # train_cfg=dict(
-    #     rpn_proposal=dict(
-    #         nms_pre=3000,
-    #         max_per_img=2000,
-    #     ),
-    # ),
-    # test_cfg=dict(
-    #     rpn=dict(
-    #         nms_pre=3000,
-    #         max_per_img=2000,
-    #     ),
-    #     rcnn=dict(
-    #         score_thr=0.05,
-    #         nms=dict(type="nms", iou_threshold=0.5),
-    #         max_per_img=2000,  # or higher, e.g. 2000 / 10000 for analysis
-    #     ),
-    # ),
+    train_cfg=dict(
+        rpn_proposal=dict(
+            # frcnn defaults are 2000/1000 for train/test
+            nms_pre=2000,
+            max_per_img=1000,
+        ),
+    ),
+    test_cfg=dict(
+        # frcnn defaults are 1000/100 for train/test
+        rpn=dict(
+            nms_pre=3000,
+            max_per_img=2000,
+        ),
+        rcnn=dict(
+            # frcnn default max_per_img=100
+            max_per_img=2000,  # or higher, e.g. 2000 / 10000 for analysis
+        ),
+    ),
 )
 
 
@@ -78,4 +86,36 @@ auto_scale_lr = dict(base_batch_size=64, enable=True)
 
 optim_wrapper = dict(
     type="AmpOptimWrapper",
+)
+
+
+#  # * Debug mode:
+# max_debug_epochs = 5
+
+# train_cfg = dict(
+#     type="EpochBasedTrainLoop",
+#     max_epochs=max_debug_epochs,
+#     val_interval=1,
+# )
+# # ---- Use only a small subset of data for fast debugging ----
+# train_dataloader = dict(
+#     # inherit everything else (batch_size, num_workers, etc.)
+#     dataset=dict(
+#         # use only first 256 training images
+#         indices=range(1024),
+#     ),
+# )
+# val_dataloader = dict(
+#     dataset=dict(
+#         # use only first 64 validation images
+#         indices=range(128),
+#     ),
+# )
+
+
+
+train_cfg = dict(
+    type="EpochBasedTrainLoop",
+    max_epochs=5,
+    val_interval=1,
 )

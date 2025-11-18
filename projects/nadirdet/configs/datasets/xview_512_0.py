@@ -85,8 +85,24 @@ val_evaluator = dict(
     metric=["bbox"],
     format_only=False,
     backend_args=backend_args,
-    # TODO: update proposal_nums to match dataset stats
-    # # again, only affects AR@K
-    # proposal_nums=(100, 300, 1000),
+    # Note: max_dets only affects AR@K in the official pycocotools. Works fine in cocobetter version
+    # of pycocotools.
+    # Note: Update max_dets if we ever eval on un-chipped images:
+    # Lower max_dets for the "Lite" check to speed up CPU accumulation
+    max_dets=(500, 1000),
+    summary_ious=(0.25, 0.50, 0.75),
 )
-test_evaluator = val_evaluator
+test_evaluator = dict(
+    type="XViewCocoMetric",
+    ann_file=data_root + "xview_coco_val_512_0.json",
+    metric=["bbox"],
+    format_only=False,
+    backend_args=backend_args,
+    # Note: max_dets only affects AR@K in the official pycocotools. Works fine in cocobetter version
+    # of pycocotools.
+    # Note: Update max_dets if we ever eval on un-chipped images:
+    # Higher Max_dets for full test eval
+    # TODO: Update max_dets if we ever eval on un-chipped images:
+    max_dets=(500, 1000, 10000),
+    summary_ious=(0.25, 0.50, 0.75),
+)
