@@ -6,7 +6,8 @@ MMDET_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 CHECKPOINTS_DIR="${MMDET_ROOT}/checkpoints"
 WEIGHTS_URL="https://download.openmmlab.com/mmdetection/v2.0/faster_rcnn/faster_rcnn_r50_fpn_mstrain_3x_coco/faster_rcnn_r50_fpn_mstrain_3x_coco_20210524_110822-e10bd31c.pth"
 WEIGHTS_FILE="${CHECKPOINTS_DIR}/faster_rcnn_r50_fpn_mstrain_3x_coco_20210524_110822-e10bd31c.pth"
-WORK_DIR="${MMDET_ROOT}/work_dirs/faster-rcnn_r50_fpn_xv512"
+WORK_DIR="${MMDET_ROOT}/work_dirs/faster-rcnn_r50_fpn_xv512_rebalanced_xview-new_anchors"
+# "faster-rcnn_r50_fpn_xv512_v02"
 mkdir -p "${CHECKPOINTS_DIR}" "${WORK_DIR}"
 
 # If "debug" is passed in as command line parameter, use the debug config

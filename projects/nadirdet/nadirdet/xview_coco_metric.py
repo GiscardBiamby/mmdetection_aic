@@ -2,14 +2,13 @@ import itertools
 import os.path as osp
 import tempfile
 from collections import OrderedDict
-from typing import Dict, List, Optional, Sequence
+from collections.abc import Sequence
 import numpy as np
 from mmdet.datasets.api_wrappers import COCO, COCOevalMP
 from mmdet.evaluation import CocoMetric
 from mmdet.registry import METRICS
 from mmengine.evaluator import BaseMetric
-from mmengine.fileio import dump, get_local_path, load
-from mmengine.hooks import checkpoint_hook
+from mmengine.fileio import get_local_path, load
 from mmengine.logging import MMLogger
 from pycocotools.cocoeval import COCOeval, StatKey, StatKeyPerClass
 from terminaltables import AsciiTable

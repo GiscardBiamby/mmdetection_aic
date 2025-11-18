@@ -20,7 +20,7 @@ default_hooks = dict(
     ),
 )
 
-# custom_hooks = [dict(type=Fp16CompresssionHook)]
+# custom_hooks = [dict(type="Fp16CompresssionHook")]
 
 # TODO: Check on cudnn best practice
 # * lets cuDNN autotune conv implementations. Can accelerate fix-size training. Don't use if input
