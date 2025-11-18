@@ -58,13 +58,13 @@ model = dict(
         rpn_proposal=dict(
             # frcnn defaults are 2000/1000 for train/test
             nms_pre=2000,
-            max_per_img=1000,
+            max_per_img=2000,
         ),
     ),
     test_cfg=dict(
         # frcnn defaults are 1000/100 for train/test
         rpn=dict(
-            nms_pre=3000,
+            nms_pre=10000, # <-- INCREASED for maximum recall analysis
             max_per_img=2000,
         ),
         rcnn=dict(
@@ -90,6 +90,7 @@ optim_wrapper = dict(
 )
 
 
+# * --------------------------------------------------------------------
 #  # * Debug mode:
 # max_debug_epochs = 5
 
@@ -113,10 +114,10 @@ optim_wrapper = dict(
 #     ),
 # )
 
+# * --------------------------------------------------------------------
 
-
-train_cfg = dict(
-    type="EpochBasedTrainLoop",
-    max_epochs=5,
-    val_interval=1,
-)
+# train_cfg = dict(
+#     type="EpochBasedTrainLoop",
+#     max_epochs=5,
+#     val_interval=1,
+# )
