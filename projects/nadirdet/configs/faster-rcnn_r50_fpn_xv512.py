@@ -43,6 +43,7 @@ model = dict(
         anchor_generator=dict(
             type="AnchorGenerator",
             scales=[2, 4, 8],               # defaults are [8]
+            # Ratios: Default is perfect. Covers 0.25 to 4.0 aspect ratios with >0.5 IoU.
             ratios=[0.5, 1.0, 2.0],         # defaults are [0.5, 1.0, 2.0]
             strides=[4, 8, 16, 32, 64],     # keep Standard FPN strides (P2-P6) defaults of [4, 8, 16, 32, 64]
         ),

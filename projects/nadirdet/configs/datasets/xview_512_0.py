@@ -89,7 +89,7 @@ val_evaluator = dict(
     # of pycocotools.
     # Note: Update max_dets if we ever eval on un-chipped images:
     # Lower max_dets for the "Lite" check to speed up CPU accumulation
-    max_dets=(500, 1000),
+    max_dets=(100, 500),
     summary_ious=(0.25, 0.50, 0.75),
 )
 test_evaluator = dict(
