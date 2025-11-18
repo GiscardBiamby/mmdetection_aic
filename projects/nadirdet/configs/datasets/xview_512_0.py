@@ -89,8 +89,9 @@ val_evaluator = dict(
     # of pycocotools.
     # Note: Update max_dets if we ever eval on un-chipped images:
     # Lower max_dets for the "Lite" check to speed up CPU accumulation
-    max_dets=(100, 500),
+    max_dets=(500, 1000),
     summary_ious=(0.25, 0.50, 0.75),
+    use_fast_coco_eval=True,  # Use the optimized COCO eval code
 )
 test_evaluator = dict(
     type="XViewCocoMetric",
@@ -102,7 +103,7 @@ test_evaluator = dict(
     # of pycocotools.
     # Note: Update max_dets if we ever eval on un-chipped images:
     # Higher Max_dets for full test eval
-    # TODO: Update max_dets if we ever eval on un-chipped images:
     max_dets=(500, 1000, 10000),
     summary_ious=(0.25, 0.50, 0.75),
+    use_fast_coco_eval=True,  # Use the optimized COCO eval code
 )

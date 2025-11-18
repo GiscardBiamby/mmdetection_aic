@@ -11,6 +11,7 @@ from mmengine.evaluator import BaseMetric
 from mmengine.fileio import get_local_path, load
 from mmengine.logging import MMLogger
 from pycocotools.cocoeval import COCOeval, StatKey, StatKeyPerClass
+from pycocotools.cocoeval_fast import COCOevalFast
 from terminaltables import AsciiTable
 
 
@@ -85,6 +86,7 @@ class XViewCocoMetric(CocoMetric):
         prefix: str | None = None,
         sort_categories: bool = False,
         use_mp_eval: bool = False,
+        use_fast_coco_eval: bool = False,
     ) -> None:
         super().__init__(collect_device=collect_device, prefix=prefix)
         # coco evaluation metrics
@@ -137,6 +139,8 @@ class XViewCocoMetric(CocoMetric):
                 "please use `backend_args` instead, please refer to"
                 "https://github.com/open-mmlab/mmdetection/blob/main/configs/_base_/datasets/coco_detection.py"  # noqa: E501
             )
+
+        self.use_fast_coco_eval = use_fast_coco_eval
 
         # if ann_file is not specified,
         # initialize coco api with the converted dataset
@@ -242,6 +246,8 @@ class XViewCocoMetric(CocoMetric):
             if self.use_mp_eval:
                 raise NotImplementedError("XViewCocoMetric does not support use_mp_eval=True")
                 coco_eval = COCOevalMP(self._coco_api, coco_dt, iou_type)
+            elif self.use_fast_coco_eval:
+                coco_eval = COCOevalFast(self._coco_api, coco_dt, iou_type)
             else:
                 coco_eval = COCOeval(self._coco_api, coco_dt, iou_type)
 
