@@ -18,4 +18,4 @@ class Fp16CompresssionHook(Hook):
             from torch.distributed.algorithms.ddp_comm_hooks import default as comm_hooks
 
             runner.model.register_comm_hook(state=None, hook=comm_hooks.fp16_compress_hook)
-            runner.logger.info("use fp16 compression in DDP mode")
+            runner.logger.info("Using fp16 compression in DDP mode")

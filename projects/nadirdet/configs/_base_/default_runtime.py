@@ -18,11 +18,13 @@ default_hooks = dict(
         interval=10,
         show=False,
     ),
+    wandb_epoch_logger=dict(
+        type="WandbEpochLoggerHook",
+    ),
 )
 
 # custom_hooks = [dict(type="Fp16CompresssionHook")]
 
-# TODO: Check on cudnn best practice
 # * lets cuDNN autotune conv implementations. Can accelerate fix-size training. Don't use if input
 # sizes vary a lot, e.g., if you have continuous variation. For example if you us e randomResize with
 # (e.g. ratio_range=(0.8, 1.2)

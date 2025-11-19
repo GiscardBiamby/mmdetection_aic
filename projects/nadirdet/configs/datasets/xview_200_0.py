@@ -87,7 +87,6 @@ XVIEW_CLASSES = (
     "Pylon",
     "Tower",
 )
-NUM_CLASSES = len(XVIEW_CLASSES)
 metainfo = dict(classes=XVIEW_CLASSES)
 
 

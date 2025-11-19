@@ -6,11 +6,9 @@ _base_ = [
 ]
 custom_imports = dict(
     imports=[
-        "projects.nadirdet.nadirdet",
         "mmdet.visualization",
         "mmdet.visualization.local_visualizer",
-        "projects.nadirdet.nadirdet.xview_coco_metric",
-        "projects.nadirdet.nadirdet.fp16_compression_hook",
+        "projects.nadirdet.nadirdet",
     ],
     allow_failed_imports=False,
 )
@@ -18,16 +16,12 @@ NUM_CLASSES = 60
 
 load_from = "https://download.openmmlab.com/mmdetection/v2.0/faster_rcnn/faster_rcnn_r50_fpn_mstrain_3x_coco/faster_rcnn_r50_fpn_mstrain_3x_coco_20210524_110822-e10bd31c.pth"
 model = dict(
-    backbone=dict(norm_eval=False, frozen_stages=-1),
+    backbone=dict(
+        norm_eval=False,  # allow BN to be trainable
+        frozen_stages=-1,
+    ),
     # * Customize anchors for xview:
-    # * Effective sizes (scale=[1, 2, 4, 8] × stride):
-    #   * Level P2 (stride 4): 4, 8, 16 32 px
-    #   * Level P3 (stride 8): 8, 16, 32 64 px
-    #   * Level P4 (stride 16): 16, 32, 64 128 px
-    #   * Level P5 (stride 32): 32, 64, 128 256 px
-    #   * Level P6 (stride 64): 64, 128, 256 512 px
-
-    # * Effective sizes (scale=[2, 4, 8] × stride):
+    # * Effective sizes (scale=[2, 4, 8] × stride=[4, 8, 16, 32, 64]):
     #   * Level P2 (stride 4): 8, 16 32 px
     #   * Level P3 (stride 8): 16, 32 64 px
     #   * Level P4 (stride 16): 32, 64 128 px
@@ -42,10 +36,11 @@ model = dict(
     rpn_head=dict(
         anchor_generator=dict(
             type="AnchorGenerator",
-            scales=[2, 4, 8],               # defaults are [8]
+            scales=[2, 4, 8],  # defaults are [8]
             # Ratios: Default is perfect. Covers 0.25 to 4.0 aspect ratios with >0.5 IoU.
-            ratios=[0.5, 1.0, 2.0],         # defaults are [0.5, 1.0, 2.0]
-            strides=[4, 8, 16, 32, 64],     # keep Standard FPN strides (P2-P6) defaults of [4, 8, 16, 32, 64]
+            ratios=[0.5, 1.0, 2.0],  # defaults are [0.5, 1.0, 2.0]
+            # keep Standard FPN strides (P2-P6) defaults of [4, 8, 16, 32, 64]
+            strides=[4, 8, 16, 32, 64],
         ),
     ),
     roi_head=dict(
@@ -64,7 +59,7 @@ model = dict(
     test_cfg=dict(
         # frcnn defaults are 1000/100 for train/test
         rpn=dict(
-            nms_pre=10000, # <-- INCREASED for maximum recall analysis
+            nms_pre=10000,  # <-- INCREASED for maximum recall analysis
             max_per_img=2000,
         ),
         rcnn=dict(
@@ -88,36 +83,3 @@ auto_scale_lr = dict(base_batch_size=64, enable=True)
 optim_wrapper = dict(
     type="AmpOptimWrapper",
 )
-
-
-# * --------------------------------------------------------------------
-#  # * Debug mode:
-# max_debug_epochs = 5
-
-# train_cfg = dict(
-#     type="EpochBasedTrainLoop",
-#     max_epochs=max_debug_epochs,
-#     val_interval=1,
-# )
-# # ---- Use only a small subset of data for fast debugging ----
-# train_dataloader = dict(
-#     # inherit everything else (batch_size, num_workers, etc.)
-#     dataset=dict(
-#         # use only first 256 training images
-#         indices=range(1024),
-#     ),
-# )
-# val_dataloader = dict(
-#     dataset=dict(
-#         # use only first 64 validation images
-#         indices=range(128),
-#     ),
-# )
-
-# * --------------------------------------------------------------------
-
-# train_cfg = dict(
-#     type="EpochBasedTrainLoop",
-#     max_epochs=5,
-#     val_interval=1,
-# )
