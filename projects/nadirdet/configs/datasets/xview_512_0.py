@@ -46,7 +46,7 @@ test_pipeline = val_pipeline
 
 train_dataloader = dict(
     _delete_=True, 
-    batch_size=16,
+    batch_size=32,
     num_workers=8,  # This setting is per-gpu
     persistent_workers=True,
     sampler=dict(type="DefaultSampler", shuffle=True),

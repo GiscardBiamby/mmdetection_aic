@@ -3,11 +3,16 @@ method: bayes
 metric:
   name: "xview_coco_precision/metric_AP-iou_0.75-area_all-max_dets=1000"
   goal: maximize
+early_terminate:
+  type: hyperband
+  min_iter: 2 # minimum number of epochs before considering stopping
+  max_iter: 5 # your total epochs (matches train_cfg.max_epochs in the script)
 parameters:
-  base_lr:
+  optim_wrapper.optimizer.lr:
     distribution: log_uniform_values
     min: 1e-6
     max: 5e-3
 command:
-  - bash
+  - ${env}
   - ./scripts/frcnn_r50_fpn_xview_lr_sweep.sh
+  - ${args_no_hyphens}
