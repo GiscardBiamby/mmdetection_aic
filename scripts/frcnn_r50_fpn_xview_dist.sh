@@ -5,7 +5,9 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 MMDET_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 
 CONFIG_PATH="projects/nadirdet/configs/faster-rcnn_r50_fpn_xv512.py"
-EXP_ID="faster-rcnn_r50_fpn_xv512_rebalanced_xview-new_anchors"
+EXP_ID="faster-rcnn_r50_fpn_xv512_rebalanced_xview-new_anchors-rfl_bsz"
+# rfl = reduced focal loss paper. bsz refers to the rpn/rcnn sampler batch sizes used in the paper.
+
 # Initialize an empty array for extra mmdet config options. Actually the array is not empty because
 # empty args list can cause `train.py: error: argument --cfg-options: expected at least one
 # argument` errors. So pick some value that never changes, like default_scope and "override" it to
@@ -19,7 +21,7 @@ if [[ "${1:-}" == "debug" ]]; then
     EXTRA_CFG_OPTIONS=(
         "train_cfg.max_epochs=5"
         "train_cfg.val_interval=1"
-        "train_dataloader.dataset.indices=1024"
+        "train_dataloader.dataset.indices=8096"
         "val_dataloader.dataset.indices=128"
     )
 fi
@@ -35,9 +37,9 @@ CUDA_VISIBLE_DEVICES=0,1,2,3,4 torchrun --nproc_per_node=$GPUS \
     --work-dir "${WORK_DIR}" \
     --launcher pytorch \
     --cfg-options \
-        "${EXTRA_CFG_OPTIONS[@]}"
-    #     vis_backends[1].init_kwargs.group='my-new-group-name'
-        #  \
+        "${EXTRA_CFG_OPTIONS[@]}" 
+        # train_dataloader.batch_size=32 \
+        # val_dataloader.batch_size=32
     #
     # * Ex.: Use custom cfg options but also pass debug args:
     # --cfg-options \

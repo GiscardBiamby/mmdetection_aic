@@ -55,6 +55,17 @@ model = dict(
             nms_pre=2000,
             max_per_img=2000,
         ),
+        # NEW: match used in xview winner paper’s batch sizes
+        rpn=dict(
+            sampler=dict(
+                num=512,  # RPN batch size used in xview winner paper (vs default of 256)
+            )
+        ),
+        rcnn=dict(
+            sampler=dict(
+                num=1024,  # head batch size used in xview winner paper (vs default of 512)
+            )
+        ),
     ),
     test_cfg=dict(
         # frcnn defaults are 1000/100 for train/test
