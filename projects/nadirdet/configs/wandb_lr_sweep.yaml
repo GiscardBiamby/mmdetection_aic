@@ -1,0 +1,13 @@
+program: tools/train.py
+method: bayes
+metric:
+  name: "xview_coco_precision/metric_AP-iou_0.75-area_all-max_dets=1000"
+  goal: maximize
+parameters:
+  base_lr:
+    distribution: log_uniform_values
+    min: 1e-6
+    max: 5e-3
+command:
+  - bash
+  - ./scripts/frcnn_r50_fpn_xview_lr_sweep.sh
