@@ -53,3 +53,11 @@ log_processor = dict(
 log_level = "INFO"
 load_from = None
 resume = False
+
+
+# * Saw these in the mmdet docs online, pasting here to look at later:
+
+# # Workflow for runner. [('train', 1)] means there is only one workflow and the workflow named
+# # 'train' is executed once. The workflow trains the model by 12 epochs according to the
+# # total_epochs.
+# workflow = [("train", 1)]

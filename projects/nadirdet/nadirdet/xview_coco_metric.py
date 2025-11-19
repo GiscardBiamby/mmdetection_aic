@@ -115,13 +115,13 @@ class XViewCocoMetric(CocoMetric):
                 [0**2, 32**2],
                 [32**2, 96**2],
                 [96**2, 1e5**2],
-            ]
+            ] # pyright: ignore[reportAssignmentType]
         self.area_ranges = area_ranges
         # iou_thrs used to compute recall or precision.
         if iou_thrs is None:
             iou_thrs = np.linspace(
                 0.25, 0.95, int(np.round((0.95 - 0.25) / 0.05)) + 1, endpoint=True
-            )
+            ) # type: ignore
         self.iou_thrs = iou_thrs
         self.metric_items = metric_items
         self.format_only = format_only
