@@ -23,7 +23,7 @@ default_hooks = dict(
     ),
 )
 
-# custom_hooks = [dict(type="Fp16CompresssionHook")]
+custom_hooks = [dict(type="Fp16CompresssionHook")]
 
 # * lets cuDNN autotune conv implementations. Can accelerate fix-size training. Don't use if input
 # sizes vary a lot, e.g., if you have continuous variation. For example if you us e randomResize with
