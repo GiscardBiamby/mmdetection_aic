@@ -6,8 +6,11 @@ MMDET_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 
 CONFIG_PATH="projects/nadirdet/configs/faster-rcnn_r50_fpn_xv512.py"
 EXP_ID="faster-rcnn_r50_fpn_xv512_rebalanced_xview-new_anchors"
-# Initialize an empty array for extra mmdet config options
-EXTRA_CFG_OPTIONS=()
+# Initialize an empty array for extra mmdet config options. Actually the array is not empty because
+# empty args list can cause `train.py: error: argument --cfg-options: expected at least one
+# argument` errors. So pick some value that never changes, like default_scope and "override" it to
+# it'sdefault value.
+EXTRA_CFG_OPTIONS=("default_scope=mmdet")
 
 # If "debug" is passed in as command line parameter, use the debug config
 if [[ "${1:-}" == "debug" ]]; then
