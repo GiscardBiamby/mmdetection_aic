@@ -45,20 +45,25 @@ val_pipeline = [
 test_pipeline = val_pipeline
 
 train_dataloader = dict(
+    _delete_=True, 
     batch_size=16,
     num_workers=8,  # This setting is per-gpu
     persistent_workers=True,
     sampler=dict(type="DefaultSampler", shuffle=True),
     dataset=dict(
-        type=dataset_type,
-        data_root=data_root,
-        ann_file="xview_coco_train_512_0.json",
-        data_prefix=dict(img="xview_coco_train_images_512_0/"),
-        filter_cfg=dict(
-            filter_empty_gt=False, min_size=1
-        ),  # Allow training on empty chips so model learns to handle background
-        pipeline=train_pipeline,
-        backend_args=backend_args,
+        type="ClassBalancedDataset",
+        oversample_thr=1e-3,  # tune this
+        dataset=dict(
+            type=dataset_type,
+            data_root=data_root,
+            ann_file="xview_coco_train_512_0.json",
+            data_prefix=dict(img="xview_coco_train_images_512_0/"),
+            filter_cfg=dict(
+                filter_empty_gt=False, min_size=1
+            ),  # Allow training on empty chips so model learns to handle background
+            pipeline=train_pipeline,
+            backend_args=backend_args,
+        ),
     ),
 )
 val_dataloader = dict(
