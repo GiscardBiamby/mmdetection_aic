@@ -18,7 +18,85 @@ chip_size = (512, 512)  # The actual image size, before any resizing/augmentatio
 #         './data/': 's3://openmmlab/datasets/detection/',
 #         'data/': 's3://openmmlab/datasets/detection/'
 #     }))
+
+# Example to use different file client
+# Method 1: simply set the data root and let the file I/O module
+# automatically infer from prefix (not support LMDB and Memcache yet)
+
+# data_root = 's3://openmmlab/datasets/detection/coco/'
+
+# Method 2: Use `backend_args`, `file_client_args` in versions before 3.0.0rc6
+# backend_args = dict(
+#     backend='petrel',
+#     path_mapping=dict({
+#         './data/': 's3://openmmlab/datasets/detection/',
+#         'data/': 's3://openmmlab/datasets/detection/'
+#     }))
 backend_args = None
+
+XVIEW_CLASSES = (
+    "Fixed-wing Aircraft",
+    "Small Aircraft",
+    "Cargo Plane",
+    "Helicopter",
+    "Passenger Vehicle",
+    "Small Car",
+    "Bus",
+    "Pickup Truck",
+    "Utility Truck",
+    "Truck",
+    "Cargo Truck",
+    "Truck w/Box",
+    "Truck Tractor",
+    "Trailer",
+    "Truck w/Flatbed",
+    "Truck w/Liquid",
+    "Crane Truck",
+    "Railway Vehicle",
+    "Passenger Car",
+    "Cargo Car",
+    "Flat Car",
+    "Tank car",
+    "Locomotive",
+    "Maritime Vessel",
+    "Motorboat",
+    "Sailboat",
+    "Tugboat",
+    "Barge",
+    "Fishing Vessel",
+    "Ferry",
+    "Yacht",
+    "Container Ship",
+    "Oil Tanker",
+    "Engineering Vehicle",
+    "Tower crane",
+    "Container Crane",
+    "Reach Stacker",
+    "Straddle Carrier",
+    "Mobile Crane",
+    "Dump Truck",
+    "Haul Truck",
+    "Scraper/Tractor",
+    "Front loader/Bulldozer",
+    "Excavator",
+    "Cement Mixer",
+    "Ground Grader",
+    "Hut/Tent",
+    "Shed",
+    "Building",
+    "Aircraft Hangar",
+    "Damaged Building",
+    "Facility",
+    "Construction Site",
+    "Vehicle Lot",
+    "Helipad",
+    "Storage Tank",
+    "Shipping container lot",
+    "Shipping Container",
+    "Pylon",
+    "Tower",
+)
+metainfo = dict(classes=XVIEW_CLASSES)
 
 
 # * Data pipelines
@@ -45,14 +123,14 @@ val_pipeline = [
 test_pipeline = val_pipeline
 
 train_dataloader = dict(
-    _delete_=True, 
-    batch_size=32,
+    _delete_=True,
+    batch_size=24,
     num_workers=8,  # This setting is per-gpu
     persistent_workers=True,
     sampler=dict(type="DefaultSampler", shuffle=True),
     dataset=dict(
         type="ClassBalancedDataset",
-        oversample_thr=1e-3,  # tune this
+        oversample_thr=0.003,  # TODO: tune this value better. Chosen arbitrarily, 0.003 makes the 25 rarest classes (by img count, not by ann count) be oversampled
         dataset=dict(
             type=dataset_type,
             data_root=data_root,
@@ -62,6 +140,7 @@ train_dataloader = dict(
                 filter_empty_gt=False, min_size=1
             ),  # Allow training on empty chips so model learns to handle background
             pipeline=train_pipeline,
+            metainfo=metainfo,
             backend_args=backend_args,
         ),
     ),
@@ -79,6 +158,7 @@ val_dataloader = dict(
         data_prefix=dict(img="xview_coco_val_images_512_0/"),
         test_mode=True,
         pipeline=val_pipeline,
+        metainfo=metainfo,
         backend_args=backend_args,
     ),
 )

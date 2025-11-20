@@ -23,6 +23,20 @@ chip_size = (200, 200)  # The actual image size, before any resizing/augmentatio
 #         './data/': 's3://openmmlab/datasets/detection/',
 #         'data/': 's3://openmmlab/datasets/detection/'
 #     }))
+
+# Example to use different file client
+# Method 1: simply set the data root and let the file I/O module
+# automatically infer from prefix (not support LMDB and Memcache yet)
+
+# data_root = 's3://openmmlab/datasets/detection/coco/'
+
+# Method 2: Use `backend_args`, `file_client_args` in versions before 3.0.0rc6
+# backend_args = dict(
+#     backend='petrel',
+#     path_mapping=dict({
+#         './data/': 's3://openmmlab/datasets/detection/',
+#         'data/': 's3://openmmlab/datasets/detection/'
+#     }))
 backend_args = None
 
 XVIEW_CLASSES = (
@@ -160,6 +174,6 @@ val_evaluator = dict(
     # pycocotools.:
     # TODO: Update max_dets if we ever eval on un-chipped images:
     max_dets=(500, 1000, 10000),
-    summary_ious=(0.25,0.50, 0.75),
+    summary_ious=(0.25, 0.50, 0.75),
 )
 test_evaluator = val_evaluator

@@ -26,7 +26,7 @@ optim_wrapper = dict(
     type="OptimWrapper",
     optimizer=dict(
         type="AdamW",
-        lr=5e-5,
+        lr=3e-4,  # Did a mini sweep 2e-6 to 3e-3, 3e-4 seemed best for xv512
         betas=(0.9, 0.999),
         weight_decay=0.05,
     ),

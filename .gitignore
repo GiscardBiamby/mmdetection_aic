@@ -109,19 +109,20 @@ data
 .idea
 .DS_Store
 
+# Pytorch
+*.pth
+*.py~
+*.sh~
+
 # custom
 *.pkl
 *.pkl.json
 *.log.json
 docs/modelzoo_statistics.md
 mmdet/.mim
-work_dirs/
-
-# Pytorch
-*.pth
-*.py~
-*.sh~
 
 weights
 weights/
 weights_ignore/
+work_dirs/
+wandb/

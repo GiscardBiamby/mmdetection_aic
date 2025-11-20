@@ -83,13 +83,29 @@ model = dict(
 
 # * Base config
 # *   - `enable` means enable scaling LR automatically
-# *   - `base_batch_size` = (4 GPUs) x (128 samples per GPU).
-# * effective lr = base_lr * scale_factor
-# * scale_factor = actual_batch_size / base_batch_size
-# * How the scaling works if you diverge from GPU count. E.g., if you use 2 GPUs:
-# * global batch = 2 × 128 = 256, scale factor = 256 / 512 = 0.5
-auto_scale_lr = dict(base_batch_size=64, enable=True)
+# *   - `base_batch_size` = 4 gpus x  24 samples_per_gpu = 96 *
+# * If you change gpu and/or per-gpu batch size, the actual global batch size changes and the lr
+# * will be scaled automatically:
+# *     scale_factor = actual_batch_size / base_batch_size
+# *     effective lr = base_lr * scale_factor
+# * E.g., if you use 2 GPUs:
+# *     global batch = 2 × 24 = 48, scale factor = 48 / 96 = 0.5
+# * This base batch size was determined on xview512 with 4 GPUs, 24 samples per GPU. If you switch
+# *  to a different chip size and then have to adjust batch size you'll have to determine the best
+# *  learning rate and/or adjust the base_batch_size. Also different data distribution, more noise
+# *  due to smaller chips, lower info density in smaller chips means model can probably take larger
+# *  steps, etc.
+# * Note: disabling the default autoscaler so we can use the custom sqrt one which is better for Adam/AdamW optimzers
+auto_scale_lr = dict(base_batch_size=96, enable=False)
 
+default_hooks = dict(
+    lr_scaling=dict(
+        type="SqrtLRScalingHook",
+        # Set this to the Global Batch Size of your "Gold Standard" sweep
+        # (e.g., 24 images/gpu * 4 gpus = 96)
+        base_batch_size=96,
+    )
+)
 
 optim_wrapper = dict(
     type="AmpOptimWrapper",
