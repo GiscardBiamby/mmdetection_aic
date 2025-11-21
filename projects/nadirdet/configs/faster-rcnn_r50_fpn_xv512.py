@@ -14,7 +14,7 @@ custom_imports = dict(
 )
 NUM_CLASSES = 60
 # fmt: off
-CLASS_INVERSE_FREQ_WEIGHTS=[
+CLASS_INVERSE_FREQ_WEIGHTS = [
     1.8606, 0.9458, 0.6412, 2.4644, 0.3556, 0.0414, 0.2285, 0.5834,
     0.3141, 0.1718, 0.2459, 0.2848, 0.6915, 0.2816, 0.6069, 1.4802,
     1.3907, 4.804, 0.4298, 0.4764, 1.4802, 1.6318, 1.6133, 0.7156,
@@ -58,14 +58,6 @@ model = dict(
     roi_head=dict(
         bbox_head=dict(
             num_classes=int(NUM_CLASSES),
-            loss_cls=dict(
-                type="CrossEntropyLoss",
-                use_sigmoid=False,
-                loss_weight=1.0,
-                # Sqrt Inverse Frequency Weights (calculated from train set)
-                # Appended 1.0 for the background class
-                class_weight=CLASS_INVERSE_FREQ_WEIGHTS,
-            ),
         )
     ),
     # # Because xview_512 has a large number of objects per image (up to 995):
