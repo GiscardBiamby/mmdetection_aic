@@ -1,5 +1,4 @@
 import copy
-import numpy as np
 import torch
 from mmdet.models.detectors import FasterRCNN
 from mmdet.registry import MODELS
@@ -126,10 +125,6 @@ class FasterRCNNGeoPose(FasterRCNN):
         if not gt_geo_poses:
             raise ValueError("No geopose ground truth found in batch.")
 
-        # Convert to tensor if numpy (LoadGeoPose returns numpy array)
-        gt_geo_poses = [
-            torch.from_numpy(p) if isinstance(p, np.ndarray) else p for p in gt_geo_poses
-        ]
         gt_geo_poses = torch.stack(gt_geo_poses).to(geo_preds.device)
 
         # Calculate loss

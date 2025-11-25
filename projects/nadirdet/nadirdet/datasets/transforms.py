@@ -1,5 +1,6 @@
 import math
 import numpy as np
+import torch
 from dateutil import parser as date_parser
 from mmcv.transforms import BaseTransform
 from mmdet.registry import TRANSFORMS
@@ -28,7 +29,9 @@ class LoadGeoPose(BaseTransform):
     def transform(self, results: dict) -> dict:
         catalog_info = results.get("catalog_info", {})
         if not catalog_info:
-            raise ValueError(f"Missing 'catalog_info' img_id: {results.get('img_path', 'unknown')}.")
+            raise ValueError(
+                f"Missing 'catalog_info' img_id: {results.get('img_path', 'unknown')}."
+            )
 
         data = catalog_info.get("data", {})
         properties = data.get("properties", {})
@@ -61,7 +64,7 @@ class LoadGeoPose(BaseTransform):
         bbox = data.get("bbox", [])
         if len(bbox) >= 4:
             # bbox is [min_lon, min_lat, max_lon, max_lat] usually in GeoJSON
-            # User example: [54.389324, 24.328633, 54.534094, 24.453395]
+            # Example: [54.389324, 24.328633, 54.534094, 24.453395]
             # Lat is index 1 and 3. Lon is index 0 and 2.
             min_lon, min_lat, max_lon, max_lat = bbox[0], bbox[1], bbox[2], bbox[3]
             lat_centroid = (min_lat + max_lat) / 2.0
@@ -89,9 +92,9 @@ class LoadGeoPose(BaseTransform):
         feat_9 = math.sin(day_norm)
         feat_10 = math.cos(day_norm)
 
-        geo_pose = np.array(
+        geo_pose = torch.tensor(
             [feat_1, feat_2, feat_3, feat_4, feat_5, feat_6, feat_7, feat_8, feat_9, feat_10],
-            dtype=np.float32,
+            dtype=torch.float32,
         )
 
         results["gt_geo_pose"] = geo_pose
