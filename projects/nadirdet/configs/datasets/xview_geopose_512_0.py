@@ -103,8 +103,9 @@ metainfo = dict(classes=XVIEW_CLASSES)
 train_pipeline = [
     dict(type="LoadImageFromFile", backend_args=backend_args),
     dict(type="LoadAnnotations", with_bbox=True),
-    dict(type="LoadGeoPose"),  # New transform
-    dict(type="RandomFlip", prob=0.75, direction=["horizontal", "vertical", "diagonal"]),  # aicdet
+    dict(type="LoadGeoPose"),  # Loads 10-d geopose vector
+    dict(type="RandomFlip", prob=0.75, direction=["horizontal", "vertical", "diagonal"]), # mmdet "distributes" the prob evenly across the directions, so p=0.75 with 3 directions means each direction has p=0.25
+    dict(type="FlipGeoPose"),  # Adjusts geopose based on the flip above
     dict(
         type="RandomResize", scale=chip_size, ratio_range=(0.8, 1.3), keep_ratio=True
     ),  # mild shrink so small objs don't vanish
