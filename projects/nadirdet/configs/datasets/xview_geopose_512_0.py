@@ -111,14 +111,13 @@ train_pipeline = [
     ),  # mild shrink so small objs don't vanish
     dict(type="FilterAnnotations", min_gt_bbox_wh=(1, 1)),
     dict(
-        type="PackDetInputs",
+        type="PackGeoPoseInputs",
         meta_keys=[
             "img_id",
             "img_path",
             "ori_shape",
             "img_shape",
             "scale_factor",
-            "gt_geo_pose",
         ],
     ),
 ]
@@ -129,14 +128,13 @@ val_pipeline = [
     dict(type="LoadGeoPose"),
     dict(type="Resize", scale=chip_size, keep_ratio=True),
     dict(
-        type="PackDetInputs",
+        type="PackGeoPoseInputs",
         meta_keys=[
             "img_id",
             "img_path",
             "ori_shape",
             "img_shape",
             "scale_factor",
-            "gt_geo_pose",
         ],
     ),
 ]

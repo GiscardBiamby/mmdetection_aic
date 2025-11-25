@@ -93,31 +93,12 @@ class FasterRCNNGeoPose(FasterRCNN):
 
         # Get targets
         # batch_data_samples is a list of DetDataSample
-        # We need to extract 'gt_geo_pose' from them.
-        # In MMDetection 3.x, custom data is usually in `metainfo` or `gt_instances`?
-        # Wait, `LoadGeoPose` adds `gt_geo_pose` to `results`.
-        # `PackDetInputs` packs `results` into `data_sample`.
-        # We need to make sure `gt_geo_pose` is packed.
-        # We might need to modify `PackDetInputs` or use a custom one,
-        # OR just access it if `PackDetInputs` puts unknown keys into `metainfo` or similar.
-
-        # Usually `PackDetInputs` puts keys in `meta_keys` into `metainfo`.
-        # We need to update the config to include `gt_geo_pose` in `meta_keys` of `PackDetInputs`.
-
+        # We extract 'gt_geo_pose' which is now a data field populated by PackGeoPoseInputs
         gt_geo_poses = []
         for data_sample in batch_data_samples:
-            # Assuming it's in metainfo (if we configure PackDetInputs correctly)
-            # Or maybe we need to check where it ends up.
-            # If we add it to `results` in transform, and add it to `meta_keys` in `PackDetInputs`,
-            # it will be in `data_sample.metainfo`.
             if hasattr(data_sample, "gt_geo_pose"):
                 gt_geo_poses.append(data_sample.gt_geo_pose)
-            elif "gt_geo_pose" in data_sample.metainfo:
-                gt_geo_poses.append(data_sample.metainfo["gt_geo_pose"])
             else:
-                # Debug info
-                # available_keys = list(data_sample.metainfo.keys())
-                # print(f"Missing gt_geo_pose. Available keys: {available_keys}")
                 raise ValueError(
                     f"Missing 'gt_geo_pose' for sample {data_sample.metainfo.get('img_path', 'unknown')}"
                 )
@@ -125,6 +106,7 @@ class FasterRCNNGeoPose(FasterRCNN):
         if not gt_geo_poses:
             raise ValueError("No geopose ground truth found in batch.")
 
+        # Stack tensors (they should already be on device)
         gt_geo_poses = torch.stack(gt_geo_poses).to(geo_preds.device)
 
         # Calculate loss
@@ -182,6 +164,6 @@ class FasterRCNNGeoPose(FasterRCNN):
 
         # Attach to results
         for data_sample, geo_pred in zip(batch_data_samples, geo_preds, strict=True):
-            data_sample.pred_geo_pose = geo_pred
+            data_sample.pred_geo_pose = geo_pred.detach()
 
         return batch_data_samples

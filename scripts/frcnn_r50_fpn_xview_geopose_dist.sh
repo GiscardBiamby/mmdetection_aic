@@ -5,7 +5,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 MMDET_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 
 CONFIG_PATH="projects/nadirdet/configs/faster-rcnn_r50_fpn_xv512_geopose.py"
-EXP_ID="frcnn_r50_fpn_xv512_geopose"
+EXP_ID="frcnn_r50_fpn_xv512_geopose_geoflip"
 # rfl = reduced focal loss paper. bsz refers to the rpn/rcnn sampler batch sizes used in the paper.
 
 # Initialize an empty array for extra mmdet config options. Actually the array is not empty because

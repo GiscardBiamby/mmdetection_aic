@@ -3,6 +3,7 @@ import torch
 from dateutil import parser as date_parser
 from mmcv.transforms import BaseTransform
 from mmdet.registry import TRANSFORMS
+from mmdet.datasets.transforms import PackDetInputs
 
 
 @TRANSFORMS.register_module()
@@ -36,11 +37,11 @@ class LoadGeoPose(BaseTransform):
         properties = data.get("properties", {})
 
         # 1. Sun Elevation
-        sun_elev = float(properties.get("view:sun_elevation", 0.0))
+        sun_elev = float(properties["view:sun_elevation"])
         feat_1 = sun_elev / 90.0
 
         # 2. Sun Azimuth
-        sun_az = float(properties.get("view:sun_azimuth", 0.0))
+        sun_az = float(properties["view:sun_azimuth"])
         sun_az_rad = math.radians(sun_az)
         feat_2 = math.sin(sun_az_rad)
         feat_3 = math.cos(sun_az_rad)
@@ -49,11 +50,11 @@ class LoadGeoPose(BaseTransform):
         off_nadir = properties.get("view:off_nadir", None)
         # Fallback to off_nadir_avg if view:off_nadir is missing (though they are usually same)
         if off_nadir is None:
-            off_nadir = properties.get("off_nadir_avg", 0.0)
+            off_nadir = properties["off_nadir_avg"]
         feat_4 = float(off_nadir) / 60.0
 
         # 4. Satellite Azimuth
-        sat_az = float(properties.get("view:azimuth", 0.0))
+        sat_az = float(properties["view:azimuth"])
         sat_az_rad = math.radians(sat_az)
         feat_5 = math.sin(sat_az_rad)
         feat_6 = math.cos(sat_az_rad)
@@ -79,7 +80,7 @@ class LoadGeoPose(BaseTransform):
         feat_8 = lon_centroid / 180.0
 
         # 6. Day of Year
-        dt_str = properties.get("datetime", "")
+        dt_str = properties["datetime"]
         if dt_str:
             try:
                 dt = date_parser.parse(dt_str)
@@ -171,3 +172,17 @@ class FlipGeoPose(BaseTransform):
 
         results["gt_geo_pose"] = gt_geo_pose
         return results
+
+
+@TRANSFORMS.register_module()
+class PackGeoPoseInputs(PackDetInputs):
+    """Pack the inputs data for the detection task and include gt_geo_pose."""
+
+    def transform(self, results: dict) -> dict:
+        packed_results = super().transform(results)
+        data_sample = packed_results["data_samples"]
+
+        if "gt_geo_pose" in results:
+            data_sample.gt_geo_pose = results["gt_geo_pose"]
+
+        return packed_results

@@ -128,6 +128,21 @@ class GeoPoseHead(BaseModule):
         }
 
     def loss(self, preds, targets):
+        """
+        L1 for Bounded (linear) vars like sun elevation, lat, lon:
+
+            * L1 is more robust to outliers than MSE
+            * These values have straightforward linear relationships (no wraparound)
+            * L1 provides consistent gradients regardless of error magnitude
+
+        MSE for Cyclic (sin/cos pairs) vars encoded as (sin θ, cos θ) pairs:
+
+            * MSE penalizes the Euclidean distance between predicted and target unit vectors
+            * This is geometrically meaningful: minimizing (sin_pred - sin_gt)² + (cos_pred - cos_gt)²
+              is equivalent to minimizing the chord distance between two points on the unit circle
+            * MSE's squared penalty discourages large deviations in either component, helping maintain
+              the implicit unit circle constraint
+        """
         # Split into bounded and cyclic components
         # Bounded: 0 (Sun Elev), 3 (Off-Nadir), 6 (Lat), 7 (Lon)
         # Cyclic: 1,2 (Sun Az), 4,5 (Sat Az), 8,9 (Day)
@@ -147,7 +162,59 @@ class GeoPoseHead(BaseModule):
         # MSE for cyclic variables (sin/cos pairs)
         loss_cyclic = self.loss_mse(preds_cyclic, targets_cyclic)
 
-        return {
+        losses = {
             "loss_geo_pose_bounded": loss_bounded * self.loss_weight,
             "loss_geo_pose_cyclic": loss_cyclic * self.loss_weight,
         }
+
+        # * mmdet uses the values that start with "loss_" in backprop, any values that don't start
+        # *  with "loss_" will only be logged and not affect the model training.
+
+        # Per-component logging (NOT used in training - no 'loss_' prefix)
+        with torch.no_grad():
+            # Bounded components - L1 (matching actual loss)
+            bounded_names = ["sun_elev", "off_nadir", "lat", "lon"]
+            per_bounded_l1 = torch.abs(preds_bounded - targets_bounded).mean(dim=0)
+            for i, name in enumerate(bounded_names):
+                losses[f"geo_{name}_l1"] = per_bounded_l1[i]
+
+            # Cyclic components - MSE (matching actual loss)
+            cyclic_names = [
+                "sun_az_sin",
+                "sun_az_cos",
+                "sat_az_sin",
+                "sat_az_cos",
+                "day_sin",
+                "day_cos",
+            ]
+            per_cyclic_mse = ((preds_cyclic - targets_cyclic) ** 2).mean(dim=0)
+            for i, name in enumerate(cyclic_names):
+                losses[f"geo_{name}_mse"] = per_cyclic_mse[i]
+
+            # Human-readable angle/value errors (degrees/units)
+            # Sun elevation error (degrees, range 0-90)
+            losses["geo_sun_elev_deg_err"] = per_bounded_l1[0] * 90.0
+
+            # Off-nadir error (degrees, range 0-60)
+            losses["geo_off_nadir_deg_err"] = per_bounded_l1[1] * 60.0
+
+            # Lat error (degrees, range -90 to 90)
+            losses["geo_lat_deg_err"] = per_bounded_l1[2] * 90.0
+
+            # Lon error (degrees, range -180 to 180)
+            losses["geo_lon_deg_err"] = per_bounded_l1[3] * 180.0
+
+            # Angular errors for azimuth/cyclic using arccos of dot product
+            # Sun azimuth angular error
+            sun_az_dot = (preds[:, 1] * targets[:, 1] + preds[:, 2] * targets[:, 2]).clamp(-1, 1)
+            losses["geo_sun_az_deg_err"] = torch.acos(sun_az_dot).mean() * (180.0 / 3.14159)
+
+            # Satellite azimuth angular error
+            sat_az_dot = (preds[:, 4] * targets[:, 4] + preds[:, 5] * targets[:, 5]).clamp(-1, 1)
+            losses["geo_sat_az_deg_err"] = torch.acos(sat_az_dot).mean() * (180.0 / 3.14159)
+
+            # Day of year angular error (convert to days out of 365)
+            day_dot = (preds[:, 8] * targets[:, 8] + preds[:, 9] * targets[:, 9]).clamp(-1, 1)
+            losses["geo_day_err"] = torch.acos(day_dot).mean() * (365.0 / (2 * 3.14159))
+
+        return losses
