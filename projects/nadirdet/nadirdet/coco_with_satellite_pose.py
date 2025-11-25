@@ -1,6 +1,8 @@
 from mmdet.datasets import CocoDataset
 from mmdet.registry import DATASETS
 
+# THis is just an example and was never tested. Assume this doesn't work.
+
 
 @DATASETS.register_module()
 class CocoDatasetWithSensorPose(CocoDataset):

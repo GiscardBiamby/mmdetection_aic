@@ -4,8 +4,8 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 MMDET_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 
-CONFIG_PATH="projects/nadirdet/configs/faster-rcnn_r50_fpn_xv512.py"
-EXP_ID="frcnn_r50_fpn_xv512_bal-new_anchors-rfl_bsz-clsbal_sampler-lr_3e-4-sqrtscaler-clsweights"
+CONFIG_PATH="projects/nadirdet/configs/faster-rcnn_r50_fpn_xv512_geopose.py"
+EXP_ID="frcnn_r50_fpn_xv512_geopose"
 # rfl = reduced focal loss paper. bsz refers to the rpn/rcnn sampler batch sizes used in the paper.
 
 # Initialize an empty array for extra mmdet config options. Actually the array is not empty because
@@ -21,8 +21,6 @@ if [[ "${1:-}" == "debug" ]]; then
     EXTRA_CFG_OPTIONS+=(
         "train_cfg.max_epochs=5"
         "train_cfg.val_interval=1"
-        # "train_dataloader.dataset.dataset.indices=8096" # use dataset.dataset if using a wrapper dataset like ClassBalancedDataset
-        # "val_dataloader.dataset.indices=128"
     )
 fi
 WORK_DIR="${MMDET_ROOT}/work_dirs/${EXP_ID}"
