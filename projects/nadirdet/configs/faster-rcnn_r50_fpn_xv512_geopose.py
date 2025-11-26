@@ -30,7 +30,12 @@ load_from = "https://download.openmmlab.com/mmdetection/v2.0/faster_rcnn/faster_
 model = dict(
     type="FasterRCNNGeoPose",
     geo_pose_head=dict(
-        type="GeoPoseHead", in_channels=256, hidden_dim=256, out_dim=10, loss_weight=0.1
+        type="GeoPoseHead",
+        in_channels=256,
+        hidden_dim=256,
+        out_dim=10,
+        loss_weight=0.1,
+        fpn_levels=(3,),  # FPN feature indices: P2=0, P3=1, P4=2, P5=3, P6=4. Options: (4,), (3, 4), (2, 3, 4), etc.
     ),
     backbone=dict(
         norm_eval=False,  # allow BN to be trainable

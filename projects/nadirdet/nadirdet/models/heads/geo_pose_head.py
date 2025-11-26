@@ -4,16 +4,17 @@ from mmdet.registry import MODELS
 from mmengine.model import BaseModule
 
 # FPN feature indices: P2=0, P3=1, P4=2, P5=3, P6=4
-GEOPOSE_FPN_LEVELS = (3,)  # Change this to (4,), (3, 4), (2, 3, 4), etc.
+DEFAULT_GEOPOSE_FPN_LEVELS = (3,)  # Default value if not specified in config
 
 
 @MODELS.register_module()
 class GeoPoseHead(BaseModule):
-    def __init__(self, in_channels, hidden_dim=256, out_dim=10, loss_weight=0.1):
+    def __init__(self, in_channels, hidden_dim=256, out_dim=10, loss_weight=0.1, fpn_levels=None):
         super().__init__()
         self.loss_weight = loss_weight
 
-        self.fpn_levels = GEOPOSE_FPN_LEVELS
+        # Use provided fpn_levels or fall back to default
+        self.fpn_levels = tuple(fpn_levels) if fpn_levels is not None else DEFAULT_GEOPOSE_FPN_LEVELS
         # THre 3 is because of the cat of three vectors in `_moment_pool:`
         fc_in_channels = in_channels * 3 * len(self.fpn_levels)
 
