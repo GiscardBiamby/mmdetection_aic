@@ -3,6 +3,9 @@ import torch.nn as nn
 from mmdet.registry import MODELS
 from mmengine.model import BaseModule
 
+# FPN feature indices: P2=0, P3=1, P4=2, P5=3, P6=4
+GEOPOSE_FPN_LEVELS = (3,)  # Change this to (4,), (3, 4), (2, 3, 4), etc.
+
 
 @MODELS.register_module()
 class GeoPoseHead(BaseModule):
@@ -10,8 +13,12 @@ class GeoPoseHead(BaseModule):
         super().__init__()
         self.loss_weight = loss_weight
 
+        self.fpn_levels = GEOPOSE_FPN_LEVELS
+        # THre 3 is because of the cat of three vectors in `_moment_pool:`
+        fc_in_channels = in_channels * 3 * len(self.fpn_levels)
+
         self.fc_layers = nn.Sequential(
-            nn.Linear(in_channels, hidden_dim),
+            nn.Linear(fc_in_channels, hidden_dim),
             nn.ReLU(),
             nn.Linear(hidden_dim, hidden_dim),
             nn.ReLU(),
@@ -21,6 +28,55 @@ class GeoPoseHead(BaseModule):
         # Loss functions
         self.loss_mse = nn.MSELoss()
         self.loss_l1 = nn.L1Loss()
+
+    def _moment_pool(self, feat: torch.Tensor) -> torch.Tensor:
+        """
+        Compute pooled features that preserve horizontal or vertical flip-sensitive orientation
+        cues.
+
+        x_grid and y_grid are just coordinate ramps in [-1, 1]:
+            * x_grid varies across width (left→right): -1 ... +1
+            * y_grid varies across height (top→bottom): -1 ... +1
+
+        When you multiply the feature map feat[B,C,H,W] by x_grid[1,1,1,W], broadcasting produces
+        [B,C,H,W]. Taking the mean over (H,W) gives [B,C].
+
+        Intuition: this computes the first spatial moment about the image center (a left-right or
+        top-bottom "imbalance" summary). Under a horizontal flip, the feature content is mirrored
+        but x_grid is fixed in image coordinates, so the x-weighted statistic changes sign (and
+        similarly for y under a vertical flip).
+
+        Returns a [B, 3C] vector made of:
+          - m0: global mean (flip-invariant)
+          - mx: x-weighted mean (changes sign under horizontal flip)
+          - my: y-weighted mean (changes sign under vertical flip)
+        """
+        # feat: [B, C, H, W]
+        B, C, H, W = feat.shape
+
+        m0 = feat.mean(dim=[2, 3])  # [B, C]
+
+        # Ensure grid dtype matches feat dtype for mixed precision training
+        x_grid = torch.linspace(-1, 1, W, device=feat.device, dtype=feat.dtype).view(1, 1, 1, W)
+        y_grid = torch.linspace(-1, 1, H, device=feat.device, dtype=feat.dtype).view(1, 1, H, 1)
+
+        mx = (feat * x_grid).mean(dim=[2, 3])  # [B, C]
+        my = (feat * y_grid).mean(dim=[2, 3])  # [B, C]
+
+        return torch.cat([m0, mx, my], dim=1)  # [B, 3C]
+
+    @staticmethod
+    def _l2_normalize_pairs(
+        vec: torch.Tensor, pairs: list[tuple[int, int]], eps: float = 1e-6
+    ) -> torch.Tensor:
+        """L2-normalize specified (sin, cos) pairs so each lies on the unit circle."""
+        original_dtype = vec.dtype
+        out = vec.clone().float()  # Work in float32 for numerical stability
+        for i, j in pairs:
+            pair = out[:, [i, j]]  # [B, 2]
+            denom = torch.sqrt((pair * pair).sum(dim=1, keepdim=True)).clamp_min(eps)  # [B, 1]
+            out[:, [i, j]] = pair / denom
+        return out.to(original_dtype)  # Convert back to original dtype
 
     def forward(self, x):
         # x is expected to be a pooled feature vector or similar
@@ -33,14 +89,18 @@ class GeoPoseHead(BaseModule):
         # and global average pool it.
 
         if isinstance(x, (tuple, list)):
-            # Use the last feature map (lowest resolution, highest semantic level)
-            feat = x[-1]
+            # Use selected FPN levels and moment-pool each, then concatenate
+            pooled = []
+            for lvl in self.fpn_levels:
+                pooled.append(self._moment_pool(x[lvl]))  # [B, 3C]
+            feat = torch.cat(pooled, dim=1)  # [B, 3C * NUM_GEOPOSE_FPN_LEVELS]
+        elif x.dim() == 4:
+            # Behave like the single-level FPN case: moment-pool the 4D map directly
+            feat = self._moment_pool(x)  # [B, 3C]
         else:
-            feat = x
-
-        # Global Average Pooling if spatial dimensions exist
-        if feat.dim() == 4:
-            feat = feat.mean(dim=[2, 3])  # [B, C]
+            raise ValueError(
+                f"Expected x to be a tuple or a tensor with shape [B,C,H,W] but got {x.shape}"
+            )
 
         out = self.fc_layers(feat)
 
@@ -150,6 +210,13 @@ class GeoPoseHead(BaseModule):
         bounded_indices = [0, 3, 6, 7]
         cyclic_indices = [1, 2, 4, 5, 8, 9]
 
+        # L2-normalize (sin, cos) pairs before loss/logging
+        cyclic_pairs = [(1, 2), (4, 5), (8, 9)]
+        preds = preds.clone()
+        targets = targets.clone()
+        preds = self._l2_normalize_pairs(preds, cyclic_pairs)
+        targets = self._l2_normalize_pairs(targets, cyclic_pairs)
+
         preds_bounded = preds[:, bounded_indices]
         targets_bounded = targets[:, bounded_indices]
 
@@ -178,7 +245,7 @@ class GeoPoseHead(BaseModule):
             for i, name in enumerate(bounded_names):
                 losses[f"geo_{name}_l1"] = per_bounded_l1[i]
 
-            # Cyclic components - MSE (matching actual loss)
+            # Cyclic components - MSE for these to match actual loss computed above:
             cyclic_names = [
                 "sun_az_sin",
                 "sun_az_cos",
